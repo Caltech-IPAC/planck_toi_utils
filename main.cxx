@@ -9,16 +9,18 @@ int main(int argc, char *argv[])
     }
   try
     {
-      tinyhtm::Query query(argv[1],argv[2],argv[3]);
-      
       const int num_bins(40);
       Ranges ranges(num_bins);
-      
-      query.callback(std::bind(&Ranges::callback,&ranges,
-                               std::placeholders::_1,
-                               std::placeholders::_2,
-                               std::placeholders::_3,
-                               std::placeholders::_4));
+
+      for(int i=3;i<argc;++i)
+        {
+          tinyhtm::Query query(argv[i],argv[1],argv[2]);
+          query.callback(std::bind(&Ranges::callback,&ranges,
+                                   std::placeholders::_1,
+                                   std::placeholders::_2,
+                                   std::placeholders::_3,
+                                   std::placeholders::_4));
+        }
       std::cout << ranges;
     }
   catch(std::runtime_error &e)
