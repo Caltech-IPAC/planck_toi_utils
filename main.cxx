@@ -1,4 +1,16 @@
+#include <thread>
 #include "Ranges.hxx"
+
+void thread_callback(const std::string &data_file, const std::string &query_shape,
+                     const std::string &vertex_string, Ranges *ranges)
+{
+  tinyhtm::Query query(data_file,query_shape,vertex_string);
+  query.callback(std::bind(&Ranges::callback,ranges,
+                           std::placeholders::_1,
+                           std::placeholders::_2,
+                           std::placeholders::_3,
+                           std::placeholders::_4));
+}
 
 int main(int argc, char *argv[])
 {
@@ -16,15 +28,14 @@ int main(int argc, char *argv[])
           ranges.emplace_back(num_bins);
         }
 
+      std::vector<std::thread> threads;
       for(int i=3;i<argc;++i)
         {
-          tinyhtm::Query query(argv[i],argv[1],argv[2]);
-          query.callback(std::bind(&Ranges::callback,&ranges[i-3],
-                                   std::placeholders::_1,
-                                   std::placeholders::_2,
-                                   std::placeholders::_3,
-                                   std::placeholders::_4));
+          threads.emplace_back(thread_callback,argv[i],argv[1],argv[2],&ranges[i-3]);
         }
+      for(auto &t: threads)
+        t.join();
+
       Ranges result(num_bins);
       for(auto &r: ranges)
         {
