@@ -1,0 +1,1 @@
+LD_LIBRARY_PATH=/home/boo/ipac/src/hires/build:/home/boo/ipac/src/base_dev/src/lib/tinyhtm/build /usr/bin/time ./build/planck_to_hires ./planck_857_other.params OUT/other ../base_dev/src/lib/tinyhtm/100.htm ../base_dev/src/lib/tinyhtm/100.h5 circle 135 43.8423101856 .2
