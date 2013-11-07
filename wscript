@@ -37,8 +37,8 @@ def configure(ctx):
 def build(ctx):
     ctx.program(
         source=[
-            'main.cxx',
-            'Ranges.cxx'],
+            'src/planck_time_ranges/main.cxx',
+            'src/planck_time_ranges/Ranges.cxx'],
         target='planck_time_ranges',
         name='planck_time_ranges',
         includes=['..'],
