@@ -1,4 +1,5 @@
 #include <thread>
+#include <fstream>
 
 #include "tinyhtm/Query.hxx"
 
@@ -23,7 +24,7 @@ void thread_callback(const std::string &data_file,
 
 int main(int argc, char *argv[])
 {
-  const int min_args(4);
+  const int min_args(5);
   if(argc-1<min_args)
     {
       std::cerr << "Need at least " << min_args
@@ -82,7 +83,16 @@ int main(int argc, char *argv[])
             {
               result.data.insert(result.data.end(),r.data.begin(),r.data.end());
             }
-          std::cout << result;
+          std::string outpath(argv[4]);
+          if(outpath=="-")
+            {
+              std::cout << result;
+            }
+          else
+            {
+              std::ofstream outfile(outpath.c_str());
+              outfile << result;
+            }
         }
     }
   catch(std::runtime_error &e)
