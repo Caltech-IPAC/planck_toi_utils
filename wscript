@@ -46,3 +46,14 @@ def build(ctx):
         use=['hdf5','hdf5_cxx','tinyhtm','tinyhtm_cxx']
     )
 
+    ctx.program(
+        source=[
+            'src/planck_toi_search/main.cxx',
+            'src/planck_toi_search/Results.cxx'],
+        target='planck_toi_search',
+        name='planck_toi_search',
+        includes=['..'],
+        install_path=os.path.join(ctx.env.PREFIX, 'bin'),
+        use=['hdf5','hdf5_cxx','tinyhtm','tinyhtm_cxx']
+    )
+

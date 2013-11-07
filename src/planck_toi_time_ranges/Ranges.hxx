@@ -1,5 +1,5 @@
-#ifndef PLANCK_TIME_RANGES_RANGE_HXX
-#define PLANCK_TIME_RANGES_RANGE_HXX
+#ifndef PLANCK_TOI_TIME_RANGES_RANGE_HXX
+#define PLANCK_TOI_TIME_RANGES_RANGE_HXX
 
 #include <cstdint>
 #include <vector>
@@ -10,10 +10,11 @@ class Ranges
 {
 public:
   static const uint64_t begin_time, end_time;
+  int utc_index;
   const uint64_t dt;
   std::vector<uint64_t> r;
-  Ranges(const size_t &s): dt((end_time-begin_time)/s), r(s) {}
-  int callback(void *entry, int num_elements, hid_t *, char **names);
+  Ranges(const size_t &s): utc_index(-1), dt((end_time-begin_time)/s), r(s) {}
+  bool callback(void *entry, int num_elements, hid_t *, char **names);
 };
 
 inline std::ostream & operator<<(std::ostream &os, const Ranges &r)
