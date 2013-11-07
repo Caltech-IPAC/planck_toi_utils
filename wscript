@@ -37,10 +37,10 @@ def configure(ctx):
 def build(ctx):
     ctx.program(
         source=[
-            'src/planck_time_ranges/main.cxx',
-            'src/planck_time_ranges/Ranges.cxx'],
-        target='planck_time_ranges',
-        name='planck_time_ranges',
+            'src/planck_toi_time_ranges/main.cxx',
+            'src/planck_toi_time_ranges/Ranges.cxx'],
+        target='planck_toi_time_ranges',
+        name='planck_toi_time_ranges',
         includes=['..'],
         install_path=os.path.join(ctx.env.PREFIX, 'bin'),
         use=['hdf5','hdf5_cxx','tinyhtm','tinyhtm_cxx']
