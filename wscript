@@ -36,6 +36,15 @@ def configure(ctx):
 
 def build(ctx):
     ctx.program(
+        source=['src/planck_to_htm.cxx', 'src/lzf/lzf_filter.c',
+                'src/lzf/lzf/lzf_c.c', 'src/lzf/lzf/lzf_d.c'],
+        target='planck_to_htm',
+        name='planck_to_htm',
+        install_path=os.path.join(ctx.env.PREFIX, 'bin'),
+        use='tinyhtm_cxx CCfits hdf5_cxx boost'
+    )
+
+    ctx.program(
         source=[
             'src/planck_toi_time_ranges/main.cxx',
             'src/planck_toi_time_ranges/Ranges.cxx'],
