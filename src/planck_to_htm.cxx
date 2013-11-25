@@ -166,14 +166,22 @@ int main(int argc, char *argv[])
                     || boost::iequals(path.extension().string(),".h5")
                     || boost::iequals(path.extension().string(),".hdf5"))
               {
-                // H5::Exception::dontPrint();
+                H5::Exception::dontPrint();
                 H5::H5File file(path.string(), H5F_ACC_RDONLY);
-                H5::DataSet dataset = file.openDataSet("tod");                
-
+                H5::DataSet dataset;
+                try {
+                    dataset = file.openDataSet("tod");
+                }
+                catch (H5::Exception &e)
+                {
+                    std::cerr << "Warning: failed to find 'tod' dataset in specified HDF5 file." << std::endl;
+                    continue;
+                }
                 H5::DataSpace dataspace = dataset.getSpace();
                 hsize_t size;
                 dataspace.getSimpleExtentDims(&size, NULL);
                 npoints+=size;
+
                 std::vector<planck_hdf5_entry> hdf_entries(size);
                 
                 H5::CompType compound(sizeof(planck_hdf5_entry));
