@@ -33,11 +33,11 @@ inline std::ostream & operator<<(std::ostream &os, const Results &results)
   os << "x y z UTC TSKY RING\n";
   for(auto &r: results.data)
     {
-      os << std::get<0>(r) << " "
-         << std::get<1>(r) << " "
-         << std::get<2>(r) << " "
-         << std::get<3>(r) << " "
-         << std::get<4>(r) << " "
+      os << std::get<0>(r) << "\t"
+         << std::get<1>(r) << "\t"
+         << std::get<2>(r) << "\t"
+         << std::get<3>(r) << "\t"
+         << std::get<4>(r) << "\t"
          << std::get<5>(r) << "\n";
     }
   return os;
