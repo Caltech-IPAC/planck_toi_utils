@@ -22,7 +22,7 @@ def configure(conf):
     if conf.options.tinyhtm_c_libs:
         tinyhtm_c_libs=conf.options.tinyhtm_c_libs.split()
     else:
-        tinyhtm_c_libs=["tinyhtm"]
+        tinyhtm_c_libs=["tinyhtm", "pthread"]
 
     conf.check_cxx(msg="Checking for TINYHTM C bindings",
                    fragment=frag,
@@ -69,7 +69,7 @@ def options(opt):
                    help='Directory where TINYHTM C/C++ library files are installed')
     tinyhtm.add_option('--tinyhtm-c-libs',
                    help='Names of the TINYHTM C libraries without prefix or suffix\n'
-                   '(e.g. "tinyhtm")')
+                   '(e.g. "tinyhtm pthread")')
     tinyhtm.add_option('--tinyhtm-cxx-libs',
                    help='Names of the TINYHTM C++ libraries without prefix or suffix\n'
                    '(e.g. "tinyhtmcxx")')
