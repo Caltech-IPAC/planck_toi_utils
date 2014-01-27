@@ -23,5 +23,5 @@ previous libraries.
 Debian
 ------
 On Debian, cfitsio, CCfits, armadillo, and boost are available through
-apt.  The hdf5 usually packaged in Debian does not include c++
-bindings, so you will have to build that yourself.
+apt.  The hdf5 package in Debian wheezy does not include c++ bindings,
+so you will have to build that yourself.
