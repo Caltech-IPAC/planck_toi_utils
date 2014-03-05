@@ -34,8 +34,9 @@ public:
 
 inline std::ostream & operator<<(std::ostream &os, const Results &results)
 {
-  os << "Old format!!\n";
-  os << "x y z UTC TSKY RING\n";
+  os << "x" << "\t" << "y" << "\t" << "z" << "\t"
+     << "UTC" << "\t" << "TSKY" << "\t" << "RING\n";
+
   for(auto &r: results.data)
     {
       os << std::get<0>(r) << "\t"

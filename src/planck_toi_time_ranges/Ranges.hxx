@@ -19,11 +19,12 @@ public:
 
 inline std::ostream & operator<<(std::ostream &os, const Ranges &r)
 {
+  os << "t_begin" << "\t" << "t_end" << "\t" << "count" << "\n";
   for(size_t i=0; i<r.r.size(); ++i)
     {
       if(r.r[i]!=0)
-        os << (r.begin_time + i*r.dt) << " "
-           << (r.begin_time + (i+1)*r.dt) << " "
+        os << (r.begin_time + i*r.dt) << "\t"
+           << (r.begin_time + (i+1)*r.dt) << "\t"
            << r.r[i] << "\n";
     }
   return os;
