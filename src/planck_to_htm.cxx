@@ -46,11 +46,12 @@ struct planck_tod_entry
 
 struct planck_hdf5_entry
 {
-  int64_t od, ring;
-  double glon, glat, psi;
-  int64_t healpix_2048;
-  double tsky, dipole;
+//  int64_t od, ring;
+  float glon, glat, psi;
+  int32_t healpix_2048;
+  float tsky;
   int64_t utc;
+  unsigned char sso;
 };
 
 std::string planck_tod_entry::names[3]={"TSKY", "UTC", "RING"};
@@ -170,11 +171,11 @@ int main(int argc, char *argv[])
                 H5::H5File file(path.string(), H5F_ACC_RDONLY);
                 H5::DataSet dataset;
                 try {
-                    dataset = file.openDataSet("tod");
+                    dataset = file.openDataSet("100-1a");
                 }
                 catch (H5::Exception &e)
                 {
-                    std::cerr << "Warning: failed to find 'tod' dataset in specified HDF5 file." << std::endl;
+                    std::cerr << "Warning: failed to find '100-1a' dataset in specified HDF5 file." << std::endl;
                     continue;
                 }
                 H5::DataSpace dataspace = dataset.getSpace();
@@ -182,39 +183,38 @@ int main(int argc, char *argv[])
                 dataspace.getSimpleExtentDims(&size, NULL);
                 npoints+=size;
 
+                std::cout << "npoints = " << npoints << "\n";
+
                 std::vector<planck_hdf5_entry> hdf_entries(size);
                 
                 H5::CompType compound(sizeof(planck_hdf5_entry));
-                compound.insertMember("od",HOFFSET(planck_hdf5_entry,od),
-                                      H5::PredType::NATIVE_INT64);
-                compound.insertMember("ring",HOFFSET(planck_hdf5_entry,ring),
-                                      H5::PredType::NATIVE_INT64);
                 compound.insertMember("glon",HOFFSET(planck_hdf5_entry,glon),
-                                      H5::PredType::NATIVE_DOUBLE);
+                                      H5::PredType::NATIVE_FLOAT);
                 compound.insertMember("glat",HOFFSET(planck_hdf5_entry,glat),
-                                      H5::PredType::NATIVE_DOUBLE);
+                                      H5::PredType::NATIVE_FLOAT);
                 compound.insertMember("psi",HOFFSET(planck_hdf5_entry,psi),
-                                      H5::PredType::NATIVE_DOUBLE);
+                                      H5::PredType::NATIVE_FLOAT);
                 compound.insertMember("healpix_2048",
                                       HOFFSET(planck_hdf5_entry,healpix_2048),
-                                      H5::PredType::NATIVE_INT64);
+                                      H5::PredType::NATIVE_INT32);
                 compound.insertMember("tsky",HOFFSET(planck_hdf5_entry,tsky),
-                                      H5::PredType::NATIVE_DOUBLE);
-                compound.insertMember("dipole",
-                                      HOFFSET(planck_hdf5_entry,dipole),
-                                      H5::PredType::NATIVE_DOUBLE);
+                                      H5::PredType::NATIVE_FLOAT);
                 compound.insertMember("utc",HOFFSET(planck_hdf5_entry,utc),
-                                      H5::PredType::NATIVE_INT64);
+                                      H5::PredType::NATIVE_DOUBLE);
+                compound.insertMember("sso",HOFFSET(planck_hdf5_entry,sso),
+                                      H5::PredType::NATIVE_UCHAR);
 
                 dataset.read(hdf_entries.data(), compound);
 
+                long nentries(0);
+
                 for(auto &hdf_entry: hdf_entries)
                   {
+                    nentries++;
                     planck_tod_entry entry;
                     /* CCfits data starts at 1, not 0 */
                     entry.tsky.d=hdf_entry.tsky;
                     entry.utc=hdf_entry.utc;
-                    entry.ring=hdf_entry.ring;
 
                     if(htm_sc_init(&entry.sc, hdf_entry.glon,
                                    hdf_entry.glat)!= HTM_OK)
@@ -239,6 +239,8 @@ int main(int argc, char *argv[])
                     entry.htmid=htm_v3_id(&v,htm_depth);
                     out.append(&entry);
                   }
+                  std::cout << "# entries processed = " << nentries << "\n";
+
               }
             else
               {

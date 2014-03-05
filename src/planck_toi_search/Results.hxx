@@ -10,6 +10,8 @@
 
 #include <hdf5.h>
 
+#include "tinyhtm/Query.hxx"
+
 class Results
 {
 public:
@@ -26,10 +28,13 @@ public:
     x_index(-1), y_index(-1), z_index(-1), utc_index(-1), tsky_index(-1),
     ring_index(-1),
     valid(true), count(false) {}
+
+  void write_fits(char * fname);
 };
 
 inline std::ostream & operator<<(std::ostream &os, const Results &results)
 {
+  os << "Old format!!\n";
   os << "x y z UTC TSKY RING\n";
   for(auto &r: results.data)
     {

@@ -83,23 +83,20 @@ void Results::write_fits(char * fname)
 {
     htm_v3 v3;
     int errcode;
-    long start_row;
 
     std::auto_ptr<CCfits::FITS> pFits(0);
     const std::string fileName(fname);
     pFits.reset(new CCfits::FITS(fileName,  CCfits::Write));
 
+    unsigned long rows(2);
     int size = data.size();
     std::cout << "Number of rows = " << size << "\n";
 
     htm_sc sc;
     int bufsize(1024);
-    double time_tai[bufsize];
-    float glon[bufsize];
-    float glat[bufsize];
-    float psi[bufsize];
-    float signal[bufsize];
-
+    double lon[bufsize];
+    double lat[bufsize];
+    
     string hduName("TABLE_BINARY");
 
 
@@ -127,56 +124,35 @@ void Results::write_fits(char * fname)
     colUnit[1] = "degrees";
     colUnit[2] = "degrees";
     colUnit[3] = "degrees";
-    colUnit[4] = "Need from header";  
-
-    CCfits::Table *newTable =  pFits->addTable(hduName, 1, colName, colForm, colUnit);
-
+// 
+// Need to add awareness of frequency since 545/857 GHz are in Mjy/sr
 //
-// Populate the extension header
-//
+    colUnit[4] = "K_CMB";  
 
-    newTable->addKey("TELESCOP", "Planck", "Telescope Name");
-    newTable->addKey("INSTRUME", "Need from header", "Instrument Name");
-    newTable->addKey("DETECTOR", "Need from header", "Detector Name");
-    newTable->addKey("FREQ", "Need from header", "GHz");
-    newTable->addKey("VERSION", "DX10", "Processing Version");
-    newTable->addKey("TARGET", "get from command line", "Target Name");
-    newTable->addKey("DATE", "generate from now", "File Creation Date (YYYY-MM-DDThh:mm:ss UT)"); 
-    newTable->addKey("OBJ_TYPE", "FIXED", "Fixed or Moving object");
-    newTable->addKey("T_GLON", 0.0, "[deg] Search GLON");
-    newTable->addKey("T_GLAT", 0.0, "[deg] Search GLAT");
-    newTable->addKey("RADIUS", 0.0, "[arcmin] Search radius");
-    newTable->addKey("MJDBEG1", 0.0, "Start time of data in MJD for first time range requested");
-    newTable->addKey("MJDEND1", 0.0, "End time of data in MJD for first time range requested");
+    CCfits::Table *newTable =  pFits->addTable(hduName, rows, colName, colForm, colUnit);
 
-    int i = 0, j = 0;
+    int i = 0;
     int nbuf = 0;
 
     for (auto &r: data)
     {
-        time_tai[i] = std::get<3>(r);
-         
         v3.x = std::get<0>(r);
         v3.y = std::get<1>(r);
         v3.z = std::get<2>(r);
         errcode = htm_v3_tosc(&sc, &v3);
-        glon[i] = sc.lon;
-        glat[i] = sc.lat;
-
-// kludge for now
-        psi[i] = 0.0;
-        
-        signal[i] = std::get<4>(r);
+        lon[i] = sc.lon;
+        lat[i] = sc.lat;
     
-        if (++i == bufsize || ++j == size) {
-            start_row = nbuf*bufsize + 1;
-            newTable->column("TIME_TAI").write(time_tai, i, start_row);
-            newTable->column("GLON").write(glon, i, start_row);
-            newTable->column("GLAT").write(glat, i, start_row);
-            newTable->column("PSI").write(psi, i, start_row);
-            newTable->column("SIGNAL").write(signal, i, start_row);
+        if (++i == bufsize) {
+            newTable->column("GLON").write(lon, bufsize, nbuf*bufsize + 1);
+            newTable->column("GLAT").write(lat, bufsize, nbuf*bufsize + 1);
             i = 0;
             nbuf++;
         }
+    }
+ 
+    if (i > 0) {
+        newTable->column("GLON").write(lon, i, nbuf*bufsize + 1);
+        newTable->column("GLAT").write(lat, i, nbuf*bufsize + 1);
     }
 }

@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
     {
       std::cerr << "Need at least " << min_args
                 << " arguments.  Only got " << argc-1 << "\n";
+      std::cerr << "Usage: $ planck_toi_search (circle | box | poly) {coords} {time ranges} {output_file} {input_file1} {input_file2} ...\n";
       exit(1);
     }
   try
@@ -62,6 +63,7 @@ int main(int argc, char *argv[])
       std::vector<uint64_t> num_result(num_input_files);
       for(int i=0;i<num_input_files;++i)
         {
+          std::cout << argv[i+min_args] << "\n";
           threads.emplace_back(thread_callback,argv[i+min_args],argv[1],argv[2],
                                &num_result[i],&results[i]);
         }
@@ -74,7 +76,7 @@ int main(int argc, char *argv[])
           uint64_t num_results(0);
           for(auto &n: num_result)
             num_results+=n;
-          std::cout << num_results << "\n";
+          std::cout << "Number of results = " << num_results << "\n";
         }
       else
         {
@@ -83,6 +85,7 @@ int main(int argc, char *argv[])
             {
               result.data.insert(result.data.end(),r.data.begin(),r.data.end());
             }
+
           std::string outpath(argv[4]);
           if(outpath=="-")
             {
@@ -90,8 +93,7 @@ int main(int argc, char *argv[])
             }
           else
             {
-              std::ofstream outfile(outpath.c_str());
-              outfile << result;
+              result.write_fits(argv[4]);
             }
         }
     }
