@@ -41,7 +41,7 @@ def build(ctx):
         target='planck_to_htm',
         name='planck_to_htm',
         install_path=os.path.join(ctx.env.PREFIX, 'bin'),
-        use='tinyhtm_cxx CCfits hdf5_cxx boost'
+        use='tinyhtm_cxx cfitsio CCfits hdf5_cxx boost'
     )
 
     ctx.program(
