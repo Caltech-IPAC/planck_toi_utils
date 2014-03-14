@@ -15,38 +15,47 @@
 struct planck_tod_entry
 {
   int64_t htmid;
-  union
-  {
-    double d;
-    int64_t i;
-  } tsky;
-  int64_t utc, ring;
-  struct htm_sc sc;
+  float x;
+  float y;
+  float z;
+  float psi;
+  float tsky;
+  int64_t utc;
+  unsigned char sso;
+  htm_sc sc;
   
-  static std::string names[3];
-  static H5::DataType types[3];
+  static std::string names[7];
+  static H5::DataType types[7];
 
   int64_t data(const size_t i) const
   {
-    assert(i==0 || i==1 || i==2);
-    if(i==0)
-      return tsky.i;
-    else if(i==1)
-      return utc;
-    return ring;
+    assert(i >= 0 && i <= 6);
+    if (i==0)
+        return x;
+    else if (i==1)
+        return y;
+    else if (i==2)
+        return z;
+    else if (i==3)
+        return psi;
+    else if (i==4)
+        return tsky;
+    else if (i==5)
+        return utc;
+    else
+        return sso;
   }
 
   bool operator<(const planck_tod_entry &p) const
   {
     return (htmid < p.htmid ||
-            (htmid == p.htmid && tsky.d < p.tsky.d));
+            (htmid == p.htmid && tsky < p.tsky));
   }
 } HTM_ALIGNED(16);
 
 
 struct planck_hdf5_entry
 {
-//  int64_t od, ring;
   float glon, glat, psi;
   int32_t healpix_2048;
   float tsky;
@@ -54,10 +63,17 @@ struct planck_hdf5_entry
   unsigned char sso;
 };
 
-std::string planck_tod_entry::names[3]={"TSKY", "UTC", "RING"};
-H5::DataType planck_tod_entry::types[3]={H5::PredType::NATIVE_DOUBLE,
-                                         H5::PredType::NATIVE_INT64,
-                                         H5::PredType::NATIVE_INT64};
+std::string planck_tod_entry::names[7] = 
+    { "X", "Y", "Z", "PSI", "TSKY", "UTC", "SSO" };
+
+H5::DataType planck_tod_entry::types[7] = 
+    { H5::PredType::NATIVE_FLOAT,
+      H5::PredType::NATIVE_FLOAT,
+      H5::PredType::NATIVE_FLOAT,
+      H5::PredType::NATIVE_FLOAT,
+      H5::PredType::NATIVE_FLOAT,
+      H5::PredType::NATIVE_INT64,
+      H5::PredType::NATIVE_UCHAR };
 
 int main(int argc, char *argv[])
 {
@@ -133,9 +149,9 @@ int main(int argc, char *argv[])
                   {
                     planck_tod_entry entry;
                     /* CCfits data starts at 1, not 0 */
-                    entry.tsky.d=tsky_column->data(i+1);
-                    entry.utc=utc_column->data(i+1);
-                    entry.ring=ring_column->data(i+1);
+//                    entry.tsky.d=tsky_column->data(i+1);
+//                    entry.utc=utc_column->data(i+1);
+//                    entry.ring=ring_column->data(i+1);
 
                     if(htm_sc_init(&entry.sc, glon_column->data(i+1),
                                    glat_column->data(i+1))!= HTM_OK)
@@ -170,12 +186,16 @@ int main(int argc, char *argv[])
                 H5::Exception::dontPrint();
                 H5::H5File file(path.string(), H5F_ACC_RDONLY);
                 H5::DataSet dataset;
+                H5::Group group;
                 try {
-                    dataset = file.openDataSet("100-1a");
+                      group = file.openGroup("/");
+                      H5std_string sstr = group.getObjnameByIdx(0);
+                      std::cout << sstr.c_str() << "\n";
+                      dataset = file.openDataSet(sstr.c_str());
                 }
                 catch (H5::Exception &e)
                 {
-                    std::cerr << "Warning: failed to find '100-1a' dataset in specified HDF5 file." << std::endl;
+                    std::cout << "Warning: failed to find any dataset in specified HDF5 file." << std::endl;
                     continue;
                 }
                 H5::DataSpace dataspace = dataset.getSpace();
@@ -204,7 +224,13 @@ int main(int argc, char *argv[])
                 compound.insertMember("sso",HOFFSET(planck_hdf5_entry,sso),
                                       H5::PredType::NATIVE_UCHAR);
 
-                dataset.read(hdf_entries.data(), compound);
+                try {
+                    dataset.read(hdf_entries.data(), compound);
+                }
+                catch (H5::Exception &e)
+                {
+                    std::cout << "Warning:: Failed to read dataset in specified HDR5 file." << std::endl;
+                }
 
                 long nentries(0);
 
@@ -212,9 +238,11 @@ int main(int argc, char *argv[])
                   {
                     nentries++;
                     planck_tod_entry entry;
-                    /* CCfits data starts at 1, not 0 */
-                    entry.tsky.d=hdf_entry.tsky;
-                    entry.utc=hdf_entry.utc;
+
+                    entry.psi = hdf_entry.psi;
+                    entry.tsky = hdf_entry.tsky;
+                    entry.utc = hdf_entry.utc;
+                    entry.sso = hdf_entry.sso;
 
                     if(htm_sc_init(&entry.sc, hdf_entry.glon,
                                    hdf_entry.glat)!= HTM_OK)
