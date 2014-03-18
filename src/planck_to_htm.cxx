@@ -62,7 +62,7 @@ struct htm_v3_float
 template<> struct htm_entry<planck_tod_entry>
 {
     htm_v3_float v;
-    char data[sizeof(<T>)-24];
+    char data[sizeof(planck_tod_entry)-24];
 } HTM_ALIGNED(16);
 
 struct planck_hdf5_entry
@@ -256,7 +256,6 @@ int main(int argc, char *argv[])
                     entry.mjd = MJD_1958_01_01 + hdf_entry.utc / 1.0e9 / 86400.0;
                     entry.sso = hdf_entry.sso;
 
-if (nentries < 10) std::cout << entry.mjd << "\n";
 
                     if(htm_sc_init(&entry.sc, hdf_entry.glon,
                                    hdf_entry.glat)!= HTM_OK)
