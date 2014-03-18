@@ -19,8 +19,8 @@ struct planck_tod_entry
   float y;
   float z;
   float psi;
+  double mjd;
   float tsky;
-  int64_t utc;
   unsigned char sso;
   htm_sc sc;
   
@@ -39,9 +39,9 @@ struct planck_tod_entry
     else if (i==3)
         return psi;
     else if (i==4)
-        return tsky;
+        return mjd;
     else if (i==5)
-        return utc;
+        return tsky;
     else
         return sso;
   }
@@ -54,26 +54,39 @@ struct planck_tod_entry
 } HTM_ALIGNED(16);
 
 
+struct htm_v3_float 
+{
+    float x,y,z;
+};
+
+template<> struct htm_entry<planck_tod_entry>
+{
+    htm_v3_float v;
+    char data[sizeof(<T>)-24];
+} HTM_ALIGNED(16);
+
 struct planck_hdf5_entry
 {
   float glon, glat, psi;
   int32_t healpix_2048;
   float tsky;
-  int64_t utc;
+  double utc;
   unsigned char sso;
 };
 
 std::string planck_tod_entry::names[7] = 
-    { "X", "Y", "Z", "PSI", "TSKY", "UTC", "SSO" };
+    { "X", "Y", "Z", "PSI", "MJD", "TSKY", "SSO" };
 
 H5::DataType planck_tod_entry::types[7] = 
     { H5::PredType::NATIVE_FLOAT,
       H5::PredType::NATIVE_FLOAT,
       H5::PredType::NATIVE_FLOAT,
       H5::PredType::NATIVE_FLOAT,
+      H5::PredType::NATIVE_DOUBLE,
       H5::PredType::NATIVE_FLOAT,
-      H5::PredType::NATIVE_INT64,
       H5::PredType::NATIVE_UCHAR };
+
+#define MJD_1958_01_01 36204.0
 
 int main(int argc, char *argv[])
 {
@@ -240,9 +253,10 @@ int main(int argc, char *argv[])
                     planck_tod_entry entry;
 
                     entry.psi = hdf_entry.psi;
-                    entry.tsky = hdf_entry.tsky;
-                    entry.utc = hdf_entry.utc;
+                    entry.mjd = MJD_1958_01_01 + hdf_entry.utc / 1.0e9 / 86400.0;
                     entry.sso = hdf_entry.sso;
+
+if (nentries < 10) std::cout << entry.mjd << "\n";
 
                     if(htm_sc_init(&entry.sc, hdf_entry.glon,
                                    hdf_entry.glat)!= HTM_OK)
