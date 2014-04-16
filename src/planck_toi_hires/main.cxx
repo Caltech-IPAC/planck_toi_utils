@@ -7,24 +7,33 @@ hires::Sample fill_samples(const tinyhtm::Query &query,
 
 int main(int argc, char* argv[])
 {
-  if(argc<6)
+  if(argc<7)
     {
-      std::cerr << "Need at least 5 arguments.  Only got " << argc-1 << "\n";
+      std::cerr << "Need at least 6 arguments.  Only got " << argc-1 << "\n";
       exit(1);
     }
   try
     {
-      tinyhtm::Query query(argv[3],argv[4],argv[5]);
+std::cout << "Query...\n";
+// htm_file shape vertex_string
+      tinyhtm::Query query(argv[4],argv[5],argv[6]);
+
+
+std::cout << "input_files.. " << argv[1] << "\n";
+std::cout << "mode.. " << argv[2] << "\n";
+      const char *hires_mode(argv[2]);
 
       std::vector<std::string> input_files;
       input_files.push_back(argv[1]);
-      hires::Hires hires("planck",input_files);
+      hires::Hires hires("planck",hires_mode,input_files);
 
       hires::Gnomonic projection(hires.crval1,hires.crval2);
       std::vector<hires::Sample> samples;
       samples.emplace_back(fill_samples(query,projection));
 
-      hires.compute_images(samples,argv[2]);
+std::cout << "compute_images.. " << argv[3] << "\n";
+
+      hires.compute_images(samples,argv[3]);
     }
   catch(std::runtime_error &e)
     {

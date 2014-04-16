@@ -11,7 +11,7 @@ hires::Sample sample;
 std::vector<double> lon, lat, flux;
 hires::Gnomonic projection(0,0);
 
-bool callback(void *entry, int num_elements, hid_t *, char **names)
+int callback(void *entry, int num_elements, hid_t *, char **names)
 {
   double x,y,z,flux_entry;
   // int64_t utc,ring;
@@ -51,14 +51,14 @@ bool callback(void *entry, int num_elements, hid_t *, char **names)
   lon.push_back(x);
   lat.push_back(y);
   flux.push_back(flux_entry);
-  return true;
+  return 1;
 }
 
 hires::Sample fill_samples(const tinyhtm::Query &query,
                            const hires::Gnomonic &Projection)
 {
   projection=Projection;
-  query.callback(callback);
+  int64_t count = query.callback(callback);
   if(lon.size()!=lat.size() || lon.size()!=flux.size())
     throw std::runtime_error("INTERNAL ERROR: sizes do not match");
 

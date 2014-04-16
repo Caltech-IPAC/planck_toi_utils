@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include <stdexcept>
+#include <math.h>
 
 #include <H5Cpp.h>
 
@@ -31,19 +32,19 @@ struct planck_tod_entry
   {
     assert(i >= 0 && i <= 6);
     if (i==0)
-        return x;
+        return reinterpret_cast<const int64_t &>(x);
     else if (i==1)
-        return y;
+        return reinterpret_cast<const int64_t &>(y);
     else if (i==2)
-        return z;
+        return reinterpret_cast<const int64_t &>(z);
     else if (i==3)
-        return psi;
+        return reinterpret_cast<const int64_t &>(psi);
     else if (i==4)
-        return mjd;
+        return reinterpret_cast<const int64_t &>(mjd);
     else if (i==5)
-        return tsky;
+        return reinterpret_cast<const int64_t &>(tsky);
     else
-        return sso;
+        return reinterpret_cast<const int64_t &>(sso);
   }
 
   bool operator<(const planck_tod_entry &p) const
@@ -61,8 +62,9 @@ struct htm_v3_float
 
 template<> struct htm_entry<planck_tod_entry>
 {
-    htm_v3_float v;
-    char data[sizeof(planck_tod_entry)-24];
+//    htm_v3_float v;
+    char data[29];
+//    char data[sizeof(planck_tod_entry)-24];
 } HTM_ALIGNED(16);
 
 struct planck_hdf5_entry
@@ -75,7 +77,7 @@ struct planck_hdf5_entry
 };
 
 std::string planck_tod_entry::names[7] = 
-    { "X", "Y", "Z", "PSI", "MJD", "TSKY", "SSO" };
+    { "x", "y", "z", "PSI", "MJD", "TSKY", "SSO" };
 
 H5::DataType planck_tod_entry::types[7] = 
     { H5::PredType::NATIVE_FLOAT,
@@ -90,10 +92,19 @@ H5::DataType planck_tod_entry::types[7] =
 
 int main(int argc, char *argv[])
 {
-  const size_t memsz = sizeof(planck_tod_entry)*16*64*1024*1024;
+  const size_t memsz = sizeof(planck_tod_entry)*4*16*64*1024*1024;
   const size_t ioblksz(sizeof(planck_tod_entry)*32*1024);
   mem_params mem(memsz, ioblksz);
   const int htm_depth(20);
+// for galactic -> J2000
+  const double PI =  3.1415926545897;
+  const double rad_to_deg = 180.0/PI;
+  const double psic = 4.9368292465;
+  const double stheta = -0.8899880874; 
+  const double ctheta = 0.455983777618;
+  const double phi = 0.57477043300;
+  double ao, bo;
+  double sb, cb, cbsa;
 
   if(argc<3)
     {
@@ -216,6 +227,12 @@ int main(int argc, char *argv[])
                 dataspace.getSimpleExtentDims(&size, NULL);
                 npoints+=size;
 
+                planck_tod_entry foo1;
+                std::cout << "sizeof tod = " << sizeof(foo1) << "\n";
+
+                htm_entry<planck_tod_entry> foo2;
+                std::cout << "sizeof htm_entry<tod> = " << sizeof(foo2) << "\n";
+
                 std::cout << "npoints = " << npoints << "\n";
 
                 std::vector<planck_hdf5_entry> hdf_entries(size);
@@ -254,11 +271,29 @@ int main(int argc, char *argv[])
 
                     entry.psi = hdf_entry.psi;
                     entry.mjd = MJD_1958_01_01 + hdf_entry.utc / 1.0e9 / 86400.0;
+                    entry.tsky = hdf_entry.tsky;
                     entry.sso = hdf_entry.sso;
+//
+// cvt Gal to J2000
+// basic copied from euler.pro in lieu of something fancy with 
+// rotation matrices and armadillo.
+//
+		    ao = hdf_entry.glon/rad_to_deg - phi;
+                    bo = hdf_entry.glat/rad_to_deg;
+                    sb = sin(bo);
+                    cb = cos(bo);
+                    cbsa = cb*sin(ao);
+                    bo = -stheta*cbsa + ctheta*sb;
+                    if (bo > 1.0) bo = 1.0;
+                    bo = asin(bo) * rad_to_deg;
+                    ao = atan2(ctheta*cbsa + stheta*sb, cb*cos(ao));
+                    ao = fmod(ao + psic + 2*PI,  2*PI) * rad_to_deg;
 
-
-                    if(htm_sc_init(&entry.sc, hdf_entry.glon,
-                                   hdf_entry.glat)!= HTM_OK)
+                    if (nentries < 2) {
+std::cout << "Galactic => J2000 " << hdf_entry.glon << " " << hdf_entry.glat << " " << ao << " " << bo << "\n";
+                    }
+         
+                    if(htm_sc_init(&entry.sc, ao, bo)!= HTM_OK)
                       {
                         std::stringstream ss;
                         ss << "Bad latitude or longitude in record: "
@@ -277,7 +312,16 @@ int main(int argc, char *argv[])
                            << "\n";
                         throw std::runtime_error(ss.str());
                       }
+                    entry.x = v.x;
+                    entry.y = v.y;
+                    entry.z = v.z;
                     entry.htmid=htm_v3_id(&v,htm_depth);
+
+if (nentries < 2) {
+     std::cout << hdf_entry.glon << " " << hdf_entry.glat;
+     std::cout << " " << entry.psi << " " << entry.mjd << " " << entry.sso << "\n";
+     std::cout << entry.x << " " << entry.y << " " << entry.z << " " << entry.htmid << "\n";
+}
                     out.append(&entry);
                   }
                   std::cout << "# entries processed = " << nentries << "\n";
@@ -290,6 +334,8 @@ int main(int argc, char *argv[])
               }
           }
       }
+
+
 
       std::chrono::milliseconds
         msecs(std::chrono::duration_cast<std::chrono::milliseconds>

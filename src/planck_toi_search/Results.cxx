@@ -6,21 +6,25 @@
 
 bool Results::callback(void *entry, int num_elements, hid_t *, char **names)
 {
-  if(utc_index==static_cast<size_t>(-1))
+  if(mjd_index==static_cast<size_t>(-1))
     {
       for(int i=0;i<num_elements;++i)
         {
-          if(names[i]==std::string("UTC"))
+          if(names[i]==std::string("PSI"))
             {
-              utc_index=i;
+              psi_index=i;
+            }
+          else if(names[i]==std::string("MJD"))
+            { 
+              mjd_index = i;
             }
           else if(names[i]==std::string("TSKY"))
             {
               tsky_index=i;
             }
-          else if(names[i]==std::string("RING"))
+          else if(names[i]==std::string("SSO"))
             {
-              ring_index=i;
+              sso_index=i;
             }
           else if(names[i]==std::string("x"))
             {
@@ -48,33 +52,36 @@ bool Results::callback(void *entry, int num_elements, hid_t *, char **names)
         throw std::runtime_error("Missing column 'y' in HTM file");
       if(z_index==static_cast<size_t>(-1))
         throw std::runtime_error("Missing column 'z' in HTM file");
-      if(utc_index==static_cast<size_t>(-1))
-        throw std::runtime_error("Missing column 'UTC' in HTM file");
+      if(mjd_index==static_cast<size_t>(-1))
+        throw std::runtime_error("Missing column 'MJD' in HTM file");
+      if(psi_index==static_cast<size_t>(-1))
+        throw std::runtime_error("Missing column 'PSI' in HTM file");
       if(tsky_index==static_cast<size_t>(-1))
         throw std::runtime_error("Missing column 'TSKY' in HTM file");
-      if(ring_index==static_cast<size_t>(-1))
-        throw std::runtime_error("Missing column 'RING' in HTM file");
+      if(sso_index==static_cast<size_t>(-1))
+        throw std::runtime_error("Missing column 'SSO' in HTM file");
     }
 
-  uint64_t utc=*((uint64_t *)(entry)+utc_index);
+  double mjd=*((double *)(entry)+mjd_index);
 
   bool in_interval(time_intervals.empty());
   for(auto &t: time_intervals)
     {
-      if(utc>=t.first && utc<t.second)
+      if((mjd >= t.first && mjd <= t.second))
         {
           in_interval=true;
           break;
         }
     }
-  if(in_interval && !count)
+    if(in_interval && !count)
     {
-      double x(((double *)(entry))[x_index]),
-        y(((double *)(entry))[y_index]),
-        z(((double *)(entry))[z_index]),
-        tsky(((double *)(entry))[tsky_index]),
-        ring(((uint64_t *)(entry))[ring_index]);
-      data.push_back(std::make_tuple(x,y,z,utc,tsky,ring));
+      float x(((float *)(entry))[x_index]),
+        y(((float *)(entry))[y_index]),
+        z(((float *)(entry))[z_index]),
+        psi(((float *)(entry))[psi_index]),
+        tsky(((float *)(entry))[tsky_index]),
+        sso(((char *)(entry))[sso_index]);
+      data.push_back(std::make_tuple(x,y,z,psi,mjd,tsky,sso));
     }
   return in_interval;
 }
@@ -94,11 +101,12 @@ void Results::write_fits(char * fname)
 
     htm_sc sc;
     int bufsize(1024);
-    double time_tai[bufsize];
+    double mjd[bufsize];
     float glon[bufsize];
     float glat[bufsize];
     float psi[bufsize];
     float signal[bufsize];
+    char sso[bufsize];
 
     string hduName("TABLE_BINARY");
 
@@ -111,11 +119,11 @@ void Results::write_fits(char * fname)
     std::vector<string> colForm(5);
     std::vector<string> colUnit(5);
 
-    colName[0] = "TIME_TAI";
+    colName[0] = "MJD";
     colName[1] = "GLON";
     colName[2] = "GLAT";
     colName[3] = "PSI";
-    colName[4] = "SIGNAL";  
+    colName[4] = "TSKY";  
 
     colForm[0] = "1D";
     colForm[1] = "1E";
@@ -123,7 +131,7 @@ void Results::write_fits(char * fname)
     colForm[3] = "1E";
     colForm[4] = "1E";
 
-    colUnit[0] = "s";
+    colUnit[0] = "days";
     colUnit[1] = "degrees";
     colUnit[2] = "degrees";
     colUnit[3] = "degrees";
@@ -154,27 +162,29 @@ void Results::write_fits(char * fname)
 
     for (auto &r: data)
     {
-        time_tai[i] = std::get<3>(r);
          
         v3.x = std::get<0>(r);
         v3.y = std::get<1>(r);
         v3.z = std::get<2>(r);
+        psi[i] = std::get<3>(r); 
+        mjd[i] = std::get<4>(r);
+        signal[i] = std::get<5>(r);
+        sso[i] = std::get<6>(r);
+
         errcode = htm_v3_tosc(&sc, &v3);
         glon[i] = sc.lon;
         glat[i] = sc.lat;
 
 // kludge for now
-        psi[i] = 0.0;
         
-        signal[i] = std::get<4>(r);
     
         if (++i == bufsize || ++j == size) {
             start_row = nbuf*bufsize + 1;
-            newTable->column("TIME_TAI").write(time_tai, i, start_row);
+            newTable->column("MJD").write(mjd, i, start_row);
             newTable->column("GLON").write(glon, i, start_row);
             newTable->column("GLAT").write(glat, i, start_row);
             newTable->column("PSI").write(psi, i, start_row);
-            newTable->column("SIGNAL").write(signal, i, start_row);
+            newTable->column("TSKY").write(signal, i, start_row);
             i = 0;
             nbuf++;
         }

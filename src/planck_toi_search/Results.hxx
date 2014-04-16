@@ -15,18 +15,17 @@
 class Results
 {
 public:
-  std::vector<std::tuple<double,double,double,uint64_t,double,uint64_t> >
-  data;
-  std::list<std::pair<uint64_t,uint64_t> > &time_intervals;
-  size_t x_index, y_index, z_index, utc_index, tsky_index, ring_index;
+  std::vector<std::tuple<float,float,float,float,double,float,char>> data;
+  std::list<std::pair<float,float> > &time_intervals;
+  size_t x_index, y_index, z_index, psi_index, mjd_index, tsky_index, sso_index;
   bool valid, count;
 
   bool callback(void *entry, int num_elements, hid_t *, char **names);
 
-  Results(std::list<std::pair<uint64_t,uint64_t> > &t):
+  Results(std::list<std::pair<float,float> > &t):
     time_intervals(t),
-    x_index(-1), y_index(-1), z_index(-1), utc_index(-1), tsky_index(-1),
-    ring_index(-1),
+    x_index(-1), y_index(-1), z_index(-1), psi_index(-1), mjd_index(-1), tsky_index(-1),
+    sso_index(-1),
     valid(true), count(false) {}
 
   void write_fits(char * fname);
@@ -35,7 +34,7 @@ public:
 inline std::ostream & operator<<(std::ostream &os, const Results &results)
 {
   os << "x" << "\t" << "y" << "\t" << "z" << "\t"
-     << "UTC" << "\t" << "TSKY" << "\t" << "RING\n";
+     << "PSI" << "\t" << "MJD" << "\t" << "TSKY" << "\t" << "SSO\n";
 
   for(auto &r: results.data)
     {
@@ -44,7 +43,8 @@ inline std::ostream & operator<<(std::ostream &os, const Results &results)
          << std::get<2>(r) << "\t"
          << std::get<3>(r) << "\t"
          << std::get<4>(r) << "\t"
-         << std::get<5>(r) << "\n";
+         << std::get<5>(r) << "\t"
+         << std::get<6>(r) << "\n";
     }
   return os;
 }

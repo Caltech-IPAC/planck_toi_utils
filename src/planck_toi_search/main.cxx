@@ -12,6 +12,8 @@ void thread_callback(const std::string &data_file,
                      Results *results)
 {
   tinyhtm::Query query(data_file,query_shape,vertex_string);
+  std::cout << "count " << results->count << "\n";
+
   if(results->count && results->time_intervals.empty())
     *num_results=query.count();
   else
@@ -37,9 +39,9 @@ int main(int argc, char *argv[])
       bool count(false);
 
       /* Parse time intervals */
-      std::list<std::pair<uint64_t,uint64_t> > time_intervals;
+      std::list<std::pair<float,float> > time_intervals;
       std::stringstream ss(argv[3]);
-      uint64_t begin_time, end_time;
+      float begin_time, end_time;
       ss >> begin_time;
       while(ss)
         {
@@ -48,8 +50,10 @@ int main(int argc, char *argv[])
             throw std::runtime_error("Need an even number of integers "
                                      "in the time interval string.");
           time_intervals.push_back(std::make_pair(begin_time,end_time));
+      std::cout << "time intervals = " << begin_time << " " << end_time << "\n";
           ss >> begin_time;
         }
+
       
       const int num_input_files(argc-min_args);
       std::vector<Results> results;
