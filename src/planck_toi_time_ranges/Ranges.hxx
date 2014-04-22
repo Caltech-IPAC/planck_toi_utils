@@ -9,11 +9,11 @@
 class Ranges
 {
 public:
-  static const uint64_t begin_time, end_time;
-  int utc_index;
-  const uint64_t dt;
-  std::vector<uint64_t> r;
-  Ranges(const size_t &s): utc_index(-1), dt((end_time-begin_time)/s), r(s) {}
+  static const double begin_time, end_time;
+  int mjd_index;
+  const double dt;
+  std::vector<double> r;
+  Ranges(const size_t &s): mjd_index(-1), dt((end_time-begin_time)/s), r(s) {}
   bool callback(void *entry, int num_elements, hid_t *, char **names);
 };
 

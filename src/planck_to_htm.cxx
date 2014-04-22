@@ -92,7 +92,7 @@ H5::DataType planck_tod_entry::types[7] =
 
 int main(int argc, char *argv[])
 {
-  const size_t memsz = sizeof(planck_tod_entry)*4*16*64*1024*1024;
+  const size_t memsz = sizeof(planck_tod_entry)*2*16*64*1024*1024;
   const size_t ioblksz(sizeof(planck_tod_entry)*32*1024);
   mem_params mem(memsz, ioblksz);
   const int htm_depth(20);

@@ -33,11 +33,15 @@ int callback(void *entry, int num_elements, hid_t *, char **names)
         {
           flux_entry=*((double *)(entry)+i);
         }
-      else if(0==std::strcmp(names[i],"UTC"))
+      else if(0==std::strcmp(names[i],"MJD"))
         {
           // utc=*((int64_t *)(entry)+i);               
         }
-      else if(0==std::strcmp(names[i],"RING"))
+      else if(0==std::strcmp(names[i],"PSI"))
+        {
+          // ring=*((int64_t *)(entry)+i);               
+        }
+      else if(0==std::strcmp(names[i],"SSO"))
         {
           // ring=*((int64_t *)(entry)+i);               
         }

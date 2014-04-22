@@ -16,6 +16,9 @@ int main(int argc, char* argv[])
     {
 std::cout << "Query...\n";
 // htm_file shape vertex_string
+std::cout << "\t" << argv[4] << "\n";
+std::cout << "\t" << argv[5] << "\n";
+std::cout << "\t" << argv[6] << "\n";
       tinyhtm::Query query(argv[4],argv[5],argv[6]);
 
 

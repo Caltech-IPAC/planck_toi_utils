@@ -39,9 +39,9 @@ int main(int argc, char *argv[])
       bool count(false);
 
       /* Parse time intervals */
-      std::list<std::pair<float,float> > time_intervals;
+      std::list<std::pair<double,double> > time_intervals;
       std::stringstream ss(argv[3]);
-      float begin_time, end_time;
+      double begin_time, end_time;
       ss >> begin_time;
       while(ss)
         {

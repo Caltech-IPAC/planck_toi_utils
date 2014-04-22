@@ -16,13 +16,13 @@ class Results
 {
 public:
   std::vector<std::tuple<float,float,float,float,double,float,char>> data;
-  std::list<std::pair<float,float> > &time_intervals;
+  std::list<std::pair<double,double> > &time_intervals;
   size_t x_index, y_index, z_index, psi_index, mjd_index, tsky_index, sso_index;
   bool valid, count;
 
   bool callback(void *entry, int num_elements, hid_t *, char **names);
 
-  Results(std::list<std::pair<float,float> > &t):
+  Results(std::list<std::pair<double,double> > &t):
     time_intervals(t),
     x_index(-1), y_index(-1), z_index(-1), psi_index(-1), mjd_index(-1), tsky_index(-1),
     sso_index(-1),
