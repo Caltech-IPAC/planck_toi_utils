@@ -45,8 +45,8 @@ int callback(void *entry, int num_elements, hid_t *, char **names)
         {
           // ring=*((int64_t *)(entry)+i);               
         }
-      else
-        throw std::runtime_error("Unknown type: " + std::string(names[i]));
+//      else
+//        throw std::runtime_error("Unknown type: " + std::string(names[i]));
     }
   /* FIXME: Do selection based on utc or ring */
   tinyhtm::Spherical coord(tinyhtm::Cartesian(x,y,z));
