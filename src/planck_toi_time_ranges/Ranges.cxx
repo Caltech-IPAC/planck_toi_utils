@@ -8,6 +8,7 @@ const double Ranges::end_time=56700.0;
 
 bool Ranges::callback(void *entry, int num_elements, hid_t *, char **names)
 {
+  const int offsets[] = {0, 4, 8, 12, 16, 24, 28};
   if(mjd_index==-1)
     for(int i=0;i<num_elements;++i)
       {
@@ -17,7 +18,7 @@ bool Ranges::callback(void *entry, int num_elements, hid_t *, char **names)
           }
       }
 
-  double mjd=*((double *)(entry)+mjd_index);
+  double mjd=*(double *)(entry+offsets[mjd_index]);
           
   size_t j((mjd-begin_time)/dt);
   if(j>=r.size())

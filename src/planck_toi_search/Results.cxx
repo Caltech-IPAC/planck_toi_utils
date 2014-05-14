@@ -6,6 +6,8 @@
 
 bool Results::callback(void *entry, int num_elements, hid_t *, char **names)
 {
+  const int offsets[] = {0, 4, 8, 12, 16, 24, 28};
+
   if(mjd_index==static_cast<size_t>(-1))
     {
       for(int i=0;i<num_elements;++i)
@@ -16,7 +18,7 @@ bool Results::callback(void *entry, int num_elements, hid_t *, char **names)
             }
           else if(names[i]==std::string("MJD"))
             { 
-              mjd_index = i;
+              mjd_index=i;
             }
           else if(names[i]==std::string("TSKY"))
             {
@@ -62,7 +64,7 @@ bool Results::callback(void *entry, int num_elements, hid_t *, char **names)
         throw std::runtime_error("Missing column 'SSO' in HTM file");
     }
 
-  double mjd=*((double *)(entry)+mjd_index);
+  double mjd=*((double *)(entry+offsets[mjd_index]));
 
   bool in_interval(time_intervals.empty());
   for(auto &t: time_intervals)
@@ -75,12 +77,12 @@ bool Results::callback(void *entry, int num_elements, hid_t *, char **names)
     }
     if(in_interval && !count)
     {
-      float x(((float *)(entry))[x_index]),
-        y(((float *)(entry))[y_index]),
-        z(((float *)(entry))[z_index]),
-        psi(((float *)(entry))[psi_index]),
-        tsky(((float *)(entry))[tsky_index]),
-        sso(((char *)(entry))[sso_index]);
+      float x(*(float *)(entry+offsets[x_index])),
+        y(*(float *)(entry+offsets[y_index])),
+        z(*(float *)(entry+offsets[z_index])),
+        psi(*(float *)(entry+offsets[psi_index])),
+        tsky(*(float *)(entry+offsets[tsky_index])),
+        sso(*(char *)(entry+offsets[sso_index]));
       data.push_back(std::make_tuple(x,y,z,psi,mjd,tsky,sso));
     }
   return in_interval;
@@ -102,11 +104,11 @@ void Results::write_fits(char * fname)
     htm_sc sc;
     int bufsize(1024);
     double mjd[bufsize];
-    float glon[bufsize];
-    float glat[bufsize];
+    float ra[bufsize];
+    float dec[bufsize];
     float psi[bufsize];
     float signal[bufsize];
-    char sso[bufsize];
+    float sso[bufsize];
 
     string hduName("TABLE_BINARY");
 
@@ -115,27 +117,30 @@ void Results::write_fits(char * fname)
 // Need to add handling of SSO object searches - which add
 // SSO_GLON and SSO_GLAT columns.
 //
-    std::vector<string> colName(5);
-    std::vector<string> colForm(5);
-    std::vector<string> colUnit(5);
+    std::vector<string> colName(6);
+    std::vector<string> colForm(6);
+    std::vector<string> colUnit(6);
 
     colName[0] = "MJD";
-    colName[1] = "GLON";
-    colName[2] = "GLAT";
+    colName[1] = "RA";
+    colName[2] = "DEC";
     colName[3] = "PSI";
     colName[4] = "TSKY";  
+    colName[5] = "SSO";
 
     colForm[0] = "1D";
     colForm[1] = "1E";
     colForm[2] = "1E";
     colForm[3] = "1E";
     colForm[4] = "1E";
+    colForm[5] = "1E";
 
     colUnit[0] = "days";
     colUnit[1] = "degrees";
     colUnit[2] = "degrees";
     colUnit[3] = "degrees";
     colUnit[4] = "Need from header";  
+    colUnit[5] = " ";
 
     CCfits::Table *newTable =  pFits->addTable(hduName, 1, colName, colForm, colUnit);
 
@@ -151,8 +156,8 @@ void Results::write_fits(char * fname)
     newTable->addKey("TARGET", "get from command line", "Target Name");
     newTable->addKey("DATE", "generate from now", "File Creation Date (YYYY-MM-DDThh:mm:ss UT)"); 
     newTable->addKey("OBJ_TYPE", "FIXED", "Fixed or Moving object");
-    newTable->addKey("T_GLON", 0.0, "[deg] Search GLON");
-    newTable->addKey("T_GLAT", 0.0, "[deg] Search GLAT");
+    newTable->addKey("T_RA", 0.0, "[deg] Search RA [J2000]");
+    newTable->addKey("T_DEC", 0.0, "[deg] Search DEC [J2000]");
     newTable->addKey("RADIUS", 0.0, "[arcmin] Search radius");
     newTable->addKey("MJDBEG1", 0.0, "Start time of data in MJD for first time range requested");
     newTable->addKey("MJDEND1", 0.0, "End time of data in MJD for first time range requested");
@@ -172,8 +177,8 @@ void Results::write_fits(char * fname)
         sso[i] = std::get<6>(r);
 
         errcode = htm_v3_tosc(&sc, &v3);
-        glon[i] = sc.lon;
-        glat[i] = sc.lat;
+        ra[i] = sc.lon;
+        dec[i] = sc.lat;
 
 // kludge for now
         
@@ -181,10 +186,11 @@ void Results::write_fits(char * fname)
         if (++i == bufsize || ++j == size) {
             start_row = nbuf*bufsize + 1;
             newTable->column("MJD").write(mjd, i, start_row);
-            newTable->column("GLON").write(glon, i, start_row);
-            newTable->column("GLAT").write(glat, i, start_row);
+            newTable->column("RA").write(ra, i, start_row);
+            newTable->column("DEC").write(dec, i, start_row);
             newTable->column("PSI").write(psi, i, start_row);
             newTable->column("TSKY").write(signal, i, start_row);
+            newTable->column("SSO").write(sso, i, start_row);
             i = 0;
             nbuf++;
         }

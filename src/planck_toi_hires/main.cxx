@@ -14,16 +14,8 @@ int main(int argc, char* argv[])
     }
   try
     {
-std::cout << "Query...\n";
 // htm_file shape vertex_string
-std::cout << "\t" << argv[4] << "\n";
-std::cout << "\t" << argv[5] << "\n";
-std::cout << "\t" << argv[6] << "\n";
       tinyhtm::Query query(argv[4],argv[5],argv[6]);
-
-
-std::cout << "input_files.. " << argv[1] << "\n";
-std::cout << "mode.. " << argv[2] << "\n";
       const char *hires_mode(argv[2]);
 
       std::vector<std::string> input_files;
@@ -33,8 +25,6 @@ std::cout << "mode.. " << argv[2] << "\n";
       hires::Gnomonic projection(hires.crval1,hires.crval2);
       std::vector<hires::Sample> samples;
       samples.emplace_back(fill_samples(query,projection));
-
-std::cout << "compute_images.. " << argv[3] << "\n";
 
       hires.compute_images(samples,argv[3]);
     }

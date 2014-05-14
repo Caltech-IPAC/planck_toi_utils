@@ -15,23 +15,28 @@ int callback(void *entry, int num_elements, hid_t *, char **names)
 {
   double x,y,z,flux_entry;
   // int64_t utc,ring;
+  const int offsets[] = {0, 4, 8, 12, 16, 24, 28};
+  void *p;
+
   for(int i=0;i<num_elements;++i)
     {
+      p = entry + offsets[i];
+
       if(0==std::strcmp(names[i],"x"))
         {
-          x=*((double *)(entry)+i);
+          x=*((float *)p);
         }
       else if(0==std::strcmp(names[i],"y"))
         {
-          y=*((double *)(entry)+i);
+          y=*((float *)p);
         }
       else if(0==std::strcmp(names[i],"z"))
         {
-          z=*((double *)(entry)+i);
+          z=*((float *)p);
         }
       else if(0==std::strcmp(names[i],"TSKY"))
         {
-          flux_entry=*((double *)(entry)+i);
+          flux_entry=*((float *)p);
         }
       else if(0==std::strcmp(names[i],"MJD"))
         {
@@ -52,6 +57,7 @@ int callback(void *entry, int num_elements, hid_t *, char **names)
   tinyhtm::Spherical coord(tinyhtm::Cartesian(x,y,z));
   std::tie(x,y)=projection.lonlat2xy(projection.radians(coord.lon()),
                                      projection.radians(coord.lat()));
+
   lon.push_back(x);
   lat.push_back(y);
   flux.push_back(flux_entry);
