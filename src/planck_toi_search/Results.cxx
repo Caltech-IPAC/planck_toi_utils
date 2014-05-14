@@ -99,7 +99,6 @@ void Results::write_fits(char * fname)
     pFits.reset(new CCfits::FITS(fileName,  CCfits::Write));
 
     int size = data.size();
-    std::cout << "Number of rows = " << size << "\n";
 
     htm_sc sc;
     int bufsize(1024);
