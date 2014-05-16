@@ -107,7 +107,7 @@ void Results::write_fits(char * fname)
     float dec[bufsize];
     float psi[bufsize];
     float signal[bufsize];
-    float sso[bufsize];
+    int sso[bufsize];
 
     string hduName("TABLE_BINARY");
 
@@ -132,7 +132,7 @@ void Results::write_fits(char * fname)
     colForm[2] = "1E";
     colForm[3] = "1E";
     colForm[4] = "1E";
-    colForm[5] = "1E";
+    colForm[5] = "1J";
 
     colUnit[0] = "days";
     colUnit[1] = "degrees";

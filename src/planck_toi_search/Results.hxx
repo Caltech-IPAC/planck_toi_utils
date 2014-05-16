@@ -35,16 +35,18 @@ inline std::ostream & operator<<(std::ostream &os, const Results &results)
 {
   os << "x" << "\t" << "y" << "\t" << "z" << "\t"
      << "PSI" << "\t" << "MJD" << "\t" << "TSKY" << "\t" << "SSO\n";
+  int sso;
 
   for(auto &r: results.data)
     {
+      sso = std::get<6>(r);
       os << std::get<0>(r) << "\t"
          << std::get<1>(r) << "\t"
          << std::get<2>(r) << "\t"
          << std::get<3>(r) << "\t"
          << std::get<4>(r) << "\t"
          << std::get<5>(r) << "\t"
-         << std::get<6>(r) << "\n";
+         << sso << "\n";
     }
   return os;
 }
