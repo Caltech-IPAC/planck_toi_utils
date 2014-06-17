@@ -20,7 +20,8 @@ int main(int argc, char* argv[])
 
       std::vector<std::string> input_files;
       input_files.push_back(argv[1]);
-      hires::Hires hires("planck",hires_mode,input_files);
+ //     hires::Hires hires("planck",hires_mode,input_files);
+      hires::Hires hires("planck",hires_mode,argv[1]);
 
       hires::Gnomonic projection(hires.crval1,hires.crval2);
       std::vector<hires::Sample> samples;
