@@ -15,19 +15,20 @@ int main(int argc, char* argv[])
   try
     {
 // htm_file shape vertex_string
-      tinyhtm::Query query(argv[4],argv[5],argv[6]);
-      const char *hires_mode(argv[2]);
+      tinyhtm::Query query(argv[3],argv[4],argv[5]);
+      const char *hires_mode(argv[1]);
 
       std::vector<std::string> input_files;
       input_files.push_back(argv[1]);
  //     hires::Hires hires("planck",hires_mode,input_files);
-      hires::Hires hires("planck",hires_mode,argv[1]);
+      std::vector<std::string> param_str(&(argv[6]), &(argv[argc]));
+      hires::Hires hires("planck",hires_mode,param_str);
 
       hires::Gnomonic projection(hires.crval1,hires.crval2);
       std::vector<hires::Sample> samples;
       samples.emplace_back(fill_samples(query,projection));
 
-      hires.compute_images(samples,argv[3]);
+      hires.compute_images(samples,argv[2]);
     }
   catch(std::runtime_error &e)
     {
