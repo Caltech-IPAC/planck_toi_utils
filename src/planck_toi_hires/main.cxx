@@ -54,19 +54,13 @@ int main(int argc, char* argv[])
       std::vector<hires::Sample> samples;
       samples.emplace_back(fill_samples(query,projection));
 
-      arma::mat wgt_image;
-      std::map<int,arma::mat> flux_images;
-      std::map<int,arma::mat> cfv_images;
-      std::map<int,arma::mat> beam_images;
 
       for (int iter=0; iter<=iter_max; ++iter) {
-          hires.iterate(wgt_image, flux_images, cfv_images, beam_images, 
-                  samples, iter);
+          hires.iterate(iter, samples);
    
           if (iter == 0 || find(iter_list.begin(),iter_list.end(),iter) != iter_list.end()) {
 // generate file name here.
-              hires.write_output(wgt_image, flux_images, cfv_images, beam_images, 
-                           iter, hires::Image_Type::all, outfile_prefix);
+              hires.write_output(iter, hires::Image_Type::all, outfile_prefix);
           }
       } 
     }
