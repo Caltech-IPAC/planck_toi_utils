@@ -9,6 +9,7 @@
 #include <CCfits/CCfits>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include "wcs.h"
 
 #include "lzf/lzf_filter.h"
 #include "tinyhtm/sort_and_index.hxx"
@@ -96,15 +97,6 @@ int main(int argc, char *argv[])
   const size_t ioblksz(sizeof(planck_tod_entry)*32*1024);
   mem_params mem(memsz, ioblksz);
   const int htm_depth(20);
-// for galactic -> J2000
-  const double PI =  3.1415926545897;
-  const double rad_to_deg = 180.0/PI;
-  const double psic = 4.9368292465;
-  const double stheta = -0.8899880874; 
-  const double ctheta = 0.455983777618;
-  const double phi = 0.57477043300;
-  double ao, bo;
-  double sb, cb, cbsa;
 
   if(argc<3)
     {
@@ -173,10 +165,6 @@ int main(int argc, char *argv[])
                   {
                     planck_tod_entry entry;
                     /* CCfits data starts at 1, not 0 */
-//                    entry.tsky.d=tsky_column->data(i+1);
-//                    entry.utc=utc_column->data(i+1);
-//                    entry.ring=ring_column->data(i+1);
-
                     if(htm_sc_init(&entry.sc, glon_column->data(i+1),
                                    glat_column->data(i+1))!= HTM_OK)
                       {
@@ -273,27 +261,11 @@ int main(int argc, char *argv[])
                     entry.mjd = MJD_1958_01_01 + hdf_entry.utc / 1.0e9 / 86400.0;
                     entry.tsky = hdf_entry.tsky;
                     entry.sso = hdf_entry.sso;
-//
-// cvt Gal to J2000
-// basic copied from euler.pro in lieu of something fancy with 
-// rotation matrices and armadillo.
-//
-		    ao = hdf_entry.glon/rad_to_deg - phi;
-                    bo = hdf_entry.glat/rad_to_deg;
-                    sb = sin(bo);
-                    cb = cos(bo);
-                    cbsa = cb*sin(ao);
-                    bo = -stheta*cbsa + ctheta*sb;
-                    if (bo > 1.0) bo = 1.0;
-                    bo = asin(bo) * rad_to_deg;
-                    ao = atan2(ctheta*cbsa + stheta*sb, cb*cos(ao));
-                    ao = fmod(ao + psic + 2*PI,  2*PI) * rad_to_deg;
 
-                    if (nentries < 2) {
-std::cout << "Galactic => J2000 " << hdf_entry.glon << " " << hdf_entry.glat << " " << ao << " " << bo << "\n";
-                    }
-         
-                    if(htm_sc_init(&entry.sc, ao, bo)!= HTM_OK)
+                    double ra=hdf_entry.glon;
+                    double dec=hdf_entry.glat;
+                    wcscon (WCS_GALACTIC, WCS_J2000, 0, 0, &ra, &dec, 1950);
+                    if(htm_sc_init(&entry.sc, ra, dec)!= HTM_OK)
                       {
                         std::stringstream ss;
                         ss << "Bad latitude or longitude in record: "
@@ -316,16 +288,9 @@ std::cout << "Galactic => J2000 " << hdf_entry.glon << " " << hdf_entry.glat << 
                     entry.y = v.y;
                     entry.z = v.z;
                     entry.htmid=htm_v3_id(&v,htm_depth);
-
-if (nentries < 2) {
-     std::cout << hdf_entry.glon << " " << hdf_entry.glat;
-     std::cout << " " << entry.psi << " " << entry.mjd << " " << entry.sso << "\n";
-     std::cout << entry.x << " " << entry.y << " " << entry.z << " " << entry.htmid << "\n";
-}
                     out.append(&entry);
                   }
                   std::cout << "# entries processed = " << nentries << "\n";
-
               }
             else
               {
