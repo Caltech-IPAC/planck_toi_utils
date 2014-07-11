@@ -46,17 +46,6 @@ def build(ctx):
 
     ctx.program(
         source=[
-            'src/planck_toi_time_ranges/main.cxx',
-            'src/planck_toi_time_ranges/Ranges.cxx'],
-        target='planck_toi_time_ranges',
-        name='planck_toi_time_ranges',
-        includes=['..'],
-        install_path=os.path.join(ctx.env.PREFIX, 'bin'),
-        use=['hdf5','hdf5_cxx','tinyhtm','tinyhtm_cxx','wcs']
-    )
-
-    ctx.program(
-        source=[
             'src/planck_toi_search/main.cxx',
             'src/planck_toi_search/Results.cxx'],
         target='planck_toi_search',
