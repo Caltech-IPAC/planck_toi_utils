@@ -18,10 +18,6 @@ def configure(conf):
             wcs_incdir.append(env_dir+'/include')
             wcs_libdir.append(env_dir+'/lib')
 
-    if not conf.options.wcs_dir:
-        conf.fatal("No value given for wcs-dir.  Tried environment "
-                   + "variable $CM_BASE_DIR")
-
     # Find wcs
     if conf.options.wcs_dir:
         if not conf.options.wcs_incdir:
