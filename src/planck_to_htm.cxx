@@ -3,6 +3,7 @@
 #include <map>
 #include <stdexcept>
 #include <math.h>
+#include <array>
 
 #include <H5Cpp.h>
 
@@ -17,35 +18,36 @@
 struct planck_tod_entry
 {
   int64_t htmid;
-  float x;
-  float y;
-  float z;
   float psi;
   double mjd;
   float tsky;
   unsigned char sso;
   htm_sc sc;
   
-  static std::string names[7];
-  static H5::DataType types[7];
+  typedef float vector_type;
+  static constexpr size_t num_elements=4;
+  static constexpr size_t data_size=17;
 
-  int64_t data(const size_t i) const
+  static std::array<std::string,num_elements> names;
+  static std::array<H5::DataType,num_elements> types;
+
+  const void* data(const size_t i) const
   {
-    assert(i >= 0 && i <= 6);
-    if (i==0)
-        return reinterpret_cast<const int64_t &>(x);
-    else if (i==1)
-        return reinterpret_cast<const int64_t &>(y);
-    else if (i==2)
-        return reinterpret_cast<const int64_t &>(z);
-    else if (i==3)
-        return reinterpret_cast<const int64_t &>(psi);
-    else if (i==4)
-        return reinterpret_cast<const int64_t &>(mjd);
-    else if (i==5)
-        return reinterpret_cast<const int64_t &>(tsky);
-    else
-        return reinterpret_cast<const int64_t &>(sso);
+    assert(i < num_elements);
+    switch(i)
+      {
+      case 0:
+        return reinterpret_cast<const void *>(&psi);
+      case 1:
+        return reinterpret_cast<const void *>(&mjd);
+      case 2:
+        return reinterpret_cast<const void *>(&tsky);
+      case 3:
+        return reinterpret_cast<const void *>(&sso);
+      }
+    /// Keep the compiler happy so that it does not warn about no
+    /// return statement.
+    return nullptr;
   }
 
   bool operator<(const planck_tod_entry &p) const
@@ -53,19 +55,6 @@ struct planck_tod_entry
     return (htmid < p.htmid ||
             (htmid == p.htmid && tsky < p.tsky));
   }
-} HTM_ALIGNED(16);
-
-
-struct htm_v3_float 
-{
-    float x,y,z;
-};
-
-template<> struct htm_entry<planck_tod_entry>
-{
-//    htm_v3_float v;
-    char data[29];
-//    char data[sizeof(planck_tod_entry)-24];
 } HTM_ALIGNED(16);
 
 struct planck_hdf5_entry
@@ -77,23 +66,17 @@ struct planck_hdf5_entry
   unsigned char sso;
 };
 
-std::string planck_tod_entry::names[7] = 
-    { "x", "y", "z", "PSI", "MJD", "TSKY", "SSO" };
+std::array<std::string,planck_tod_entry::num_elements> planck_tod_entry::names
+{{ "PSI", "MJD", "TSKY", "SSO" }};
 
-H5::DataType planck_tod_entry::types[7] = 
-    { H5::PredType::NATIVE_FLOAT,
-      H5::PredType::NATIVE_FLOAT,
-      H5::PredType::NATIVE_FLOAT,
-      H5::PredType::NATIVE_FLOAT,
-      H5::PredType::NATIVE_DOUBLE,
-      H5::PredType::NATIVE_FLOAT,
-      H5::PredType::NATIVE_UCHAR };
-
-#define MJD_1958_01_01 36204.0
+std::array<H5::DataType,planck_tod_entry::num_elements> planck_tod_entry::types
+{{ H5::PredType::NATIVE_FLOAT, H5::PredType::NATIVE_DOUBLE,
+      H5::PredType::NATIVE_FLOAT, H5::PredType::NATIVE_UCHAR }};
 
 int main(int argc, char *argv[])
 {
-  const size_t memsz = sizeof(planck_tod_entry)*2*16*64*1024*1024;
+  const size_t memsz = sizeof(planck_tod_entry)*2*16*64*1024;
+  // const size_t memsz = sizeof(planck_tod_entry)*2*16*64*1024*1024;
   const size_t ioblksz(sizeof(planck_tod_entry)*32*1024);
   mem_params mem(memsz, ioblksz);
   const int htm_depth(20);
@@ -207,7 +190,8 @@ int main(int argc, char *argv[])
                 }
                 catch (H5::Exception &e)
                 {
-                    std::cout << "Warning: failed to find any dataset in specified HDF5 file." << std::endl;
+                    std::cout << "Warning: failed to find any dataset in "
+                              << "specified HDF5 file." << std::endl;
                     continue;
                 }
                 H5::DataSpace dataspace = dataset.getSpace();
@@ -247,7 +231,8 @@ int main(int argc, char *argv[])
                 }
                 catch (H5::Exception &e)
                 {
-                    std::cout << "Warning:: Failed to read dataset in specified HDR5 file." << std::endl;
+                    std::cout << "Warning:: Failed to read dataset in "
+                              << "specified HDF5 file." << std::endl;
                 }
 
                 long nentries(0);
@@ -258,6 +243,7 @@ int main(int argc, char *argv[])
                     planck_tod_entry entry;
 
                     entry.psi = hdf_entry.psi;
+                    const double MJD_1958_01_01=36204.0;
                     entry.mjd = MJD_1958_01_01 + hdf_entry.utc / 1.0e9 / 86400.0;
                     entry.tsky = hdf_entry.tsky;
                     entry.sso = hdf_entry.sso;
@@ -284,9 +270,6 @@ int main(int argc, char *argv[])
                            << "\n";
                         throw std::runtime_error(ss.str());
                       }
-                    entry.x = v.x;
-                    entry.y = v.y;
-                    entry.z = v.z;
                     entry.htmid=htm_v3_id(&v,htm_depth);
                     out.append(&entry);
                   }
