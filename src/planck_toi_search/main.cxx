@@ -16,11 +16,11 @@ void thread_callback(const std::string &data_file,
   if(results->count && results->time_intervals.empty())
     *num_results=query.count();
   else
-    *num_results=query.callback(std::bind(&Results::callback,results,
-                                    std::placeholders::_1,
-                                    std::placeholders::_2,
-                                    std::placeholders::_3,
-                                    std::placeholders::_4));
+    *num_results=query.search(std::bind(&Results::callback,results,
+                                        std::placeholders::_1,
+                                        std::placeholders::_2,
+                                        std::placeholders::_3,
+                                        std::placeholders::_4));
 }
 
 int main(int argc, char *argv[])

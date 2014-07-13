@@ -65,7 +65,7 @@ hires::Sample fill_samples(const tinyhtm::Query &query,
                            const hires::Gnomonic &Projection)
 {
   projection=Projection;
-  query.callback(callback);
+  query.search(callback);
   if(lon.size()!=lat.size() || lon.size()!=flux.size())
     throw std::runtime_error("INTERNAL ERROR: sizes do not match");
 
