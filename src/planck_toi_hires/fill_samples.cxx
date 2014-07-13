@@ -11,10 +11,10 @@ hires::Sample sample;
 std::vector<double> lon, lat, flux;
 hires::Gnomonic projection(0,0);
 
-int callback(void *entry, int num_elements, hid_t *, char **names)
+int callback(void *void_entry, int num_elements, hid_t *, char **names)
 {
+  char *entry=static_cast<char *>(void_entry);
   double x,y,z,flux_entry;
-  // int64_t utc,ring;
   const int offsets[] = {0, 4, 8, 12, 16, 24, 28};
   void *p;
 
@@ -40,20 +40,17 @@ int callback(void *entry, int num_elements, hid_t *, char **names)
         }
       else if(0==std::strcmp(names[i],"MJD"))
         {
-          // utc=*((int64_t *)(entry)+i);               
         }
       else if(0==std::strcmp(names[i],"PSI"))
         {
-          // ring=*((int64_t *)(entry)+i);               
         }
       else if(0==std::strcmp(names[i],"SSO"))
         {
-          // ring=*((int64_t *)(entry)+i);               
         }
-//      else
-//        throw std::runtime_error("Unknown type: " + std::string(names[i]));
+     else
+       throw std::runtime_error("Unknown type: " + std::string(names[i]));
     }
-  /* FIXME: Do selection based on utc or ring */
+  /* FIXME: Do selection based on utc */
   tinyhtm::Spherical coord(tinyhtm::Cartesian(x,y,z));
   std::tie(x,y)=projection.lonlat2xy(projection.radians(coord.lon()),
                                      projection.radians(coord.lat()));
@@ -68,7 +65,7 @@ hires::Sample fill_samples(const tinyhtm::Query &query,
                            const hires::Gnomonic &Projection)
 {
   projection=Projection;
-  int64_t count = query.callback(callback);
+  query.callback(callback);
   if(lon.size()!=lat.size() || lon.size()!=flux.size())
     throw std::runtime_error("INTERNAL ERROR: sizes do not match");
 
