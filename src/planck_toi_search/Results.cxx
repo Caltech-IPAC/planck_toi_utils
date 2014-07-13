@@ -4,8 +4,9 @@
 #include "Results.hxx"
 #include "tinyhtm.h"
 
-bool Results::callback(void *entry, int num_elements, hid_t *, char **names)
+bool Results::callback(void *void_entry, int num_elements, hid_t *, char **names)
 {
+  char *entry=static_cast<char *>(void_entry);
   const int offsets[] = {0, 4, 8, 12, 16, 24, 28};
 
   if(mjd_index==static_cast<size_t>(-1))
@@ -91,7 +92,6 @@ bool Results::callback(void *entry, int num_elements, hid_t *, char **names)
 void Results::write_fits(char * fname)
 {
     htm_v3 v3;
-    int errcode;
     long start_row;
 
     std::auto_ptr<CCfits::FITS> pFits(0);
@@ -175,14 +175,16 @@ void Results::write_fits(char * fname)
         signal[i] = std::get<5>(r);
         sso[i] = std::get<6>(r);
 
-        errcode = htm_v3_tosc(&sc, &v3);
+        // FIXME: Need to check error codes
+        htm_v3_tosc(&sc, &v3);
         ra[i] = sc.lon;
         dec[i] = sc.lat;
 
-// kludge for now
+        // kludge for now
         
     
-        if (++i == bufsize || ++j == size) {
+        if (++i == bufsize || ++j == size)
+          {
             start_row = nbuf*bufsize + 1;
             newTable->column("MJD").write(mjd, i, start_row);
             newTable->column("RA").write(ra, i, start_row);
@@ -192,6 +194,6 @@ void Results::write_fits(char * fname)
             newTable->column("SSO").write(sso, i, start_row);
             i = 0;
             nbuf++;
-        }
+          }
     }
 }
