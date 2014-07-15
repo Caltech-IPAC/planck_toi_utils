@@ -1,132 +1,19 @@
 #include <iostream>
-#include <memory>
 #include <string>
-#include <map>
 #include <stdexcept>
-#include <math.h>
-#include <iomanip>
+#include <cmath>
+#include <vector>
 
 #include <H5Cpp.h>
 
-#include <boost/filesystem.hpp>
-#include <boost/algorithm/string.hpp>
-
 #include "../lzf/lzf_filter.h"
-
-struct raw_entry
-{
-  float glon, glat, psi;
-  int32_t healpix_2048;
-  float tsky;
-  double utc;
-  unsigned char sso;
-
-  bool operator<(const raw_entry &p) const
-  {
-    return utc < p.utc;
-  }
-};
+#include "indexed_entry.hxx"
+#include "raw_entry.hxx"
 
 void read_raw_hdf5(const std::string &filename,
-                   std::vector<raw_entry> &raw_entries)
-{
-  boost::filesystem::path path(filename);
-
-  H5::Exception::dontPrint();
-  H5::H5File file(path.string(), H5F_ACC_RDONLY);
-  H5::DataSet dataset;
-  H5::Group group;
-
-  group = file.openGroup("/");
-  H5std_string sstr = group.getObjnameByIdx(0);
-  dataset = file.openDataSet(sstr.c_str());
-
-  H5::DataSpace dataspace = dataset.getSpace();
-  hsize_t size;
-  dataspace.getSimpleExtentDims(&size, NULL);
-  raw_entries.resize(size);
-                
-  H5::CompType compound(sizeof(raw_entry));
-  compound.insertMember("glon",HOFFSET(raw_entry,glon),
-                        H5::PredType::NATIVE_FLOAT);
-  compound.insertMember("glat",HOFFSET(raw_entry,glat),
-                        H5::PredType::NATIVE_FLOAT);
-  compound.insertMember("psi",HOFFSET(raw_entry,psi),
-                        H5::PredType::NATIVE_FLOAT);
-  compound.insertMember("healpix_2048",
-                        HOFFSET(raw_entry,healpix_2048),
-                        H5::PredType::NATIVE_INT32);
-  compound.insertMember("tsky",HOFFSET(raw_entry,tsky),
-                        H5::PredType::NATIVE_FLOAT);
-  compound.insertMember("utc",HOFFSET(raw_entry,utc),
-                        H5::PredType::NATIVE_DOUBLE);
-  compound.insertMember("sso",HOFFSET(raw_entry,sso),
-                        H5::PredType::NATIVE_UCHAR);
-
-  dataset.read(raw_entries.data(), compound);
-
-  sort(raw_entries.begin(), raw_entries.end());
-}
-
-
-
-struct indexed_entry
-{
-  double ra, dec;
-  float psi;
-  double mjd;
-  float tsky;
-  double glon, glat;
-  unsigned char sso;
-
-  bool operator<(const indexed_entry &p) const
-  {
-    return mjd < p.mjd;
-  }
-};
-
+                   std::vector<raw_entry> &raw_entries);
 void read_indexed_hdf5(const std::string &filename,
-                       std::vector<indexed_entry> &indexed_entries)
-{
-  boost::filesystem::path path(filename);
-
-  H5::Exception::dontPrint();
-  H5::H5File file(path.string(), H5F_ACC_RDONLY);
-  H5::DataSet dataset;
-  H5::Group group;
-
-  group = file.openGroup("/");
-  H5std_string sstr = group.getObjnameByIdx(0);
-  dataset = file.openDataSet(sstr.c_str());
-
-  H5::DataSpace dataspace = dataset.getSpace();
-  hsize_t size;
-  dataspace.getSimpleExtentDims(&size, NULL);
-  indexed_entries.resize(size);
-                
-  H5::CompType compound(sizeof(indexed_entry));
-  compound.insertMember("ra",HOFFSET(indexed_entry,ra),
-                        H5::PredType::NATIVE_DOUBLE);
-  compound.insertMember("dec",HOFFSET(indexed_entry,dec),
-                        H5::PredType::NATIVE_DOUBLE);
-  compound.insertMember("psi",HOFFSET(indexed_entry,psi),
-                        H5::PredType::NATIVE_FLOAT);
-  compound.insertMember("mjd",HOFFSET(indexed_entry,mjd),
-                        H5::PredType::NATIVE_DOUBLE);
-  compound.insertMember("tsky",HOFFSET(indexed_entry,tsky),
-                        H5::PredType::NATIVE_FLOAT);
-  compound.insertMember("glon",HOFFSET(indexed_entry,glon),
-                        H5::PredType::NATIVE_DOUBLE);
-  compound.insertMember("glat",HOFFSET(indexed_entry,glat),
-                        H5::PredType::NATIVE_DOUBLE);
-  compound.insertMember("sso",HOFFSET(indexed_entry,sso),
-                        H5::PredType::NATIVE_UCHAR);
-
-  dataset.read(indexed_entries.data(), compound);
-
-  sort(indexed_entries.begin(), indexed_entries.end());
-}
-
+                       std::vector<indexed_entry> &indexed_entries);
 
 int main(int argc, char *argv[])
 {

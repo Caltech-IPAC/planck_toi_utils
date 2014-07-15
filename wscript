@@ -37,6 +37,8 @@ def configure(ctx):
 def build(ctx):
     ctx.program(
         source=['src/compare/compare.cxx',
+                'src/compare/read_raw_hdf5.cxx',
+                'src/compare/read_indexed_hdf5.cxx',
                 'src/lzf/lzf_filter.c',
                 'src/lzf/lzf/lzf_c.c', 'src/lzf/lzf/lzf_d.c'],
         target='compare',
