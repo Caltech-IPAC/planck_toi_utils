@@ -46,8 +46,7 @@ int main(int argc, char* argv[])
 
 // HIRES parameters
       std::vector<std::string> param_str(&(argv[6]), &(argv[argc]));
-      hires::Hires_Parameters hp(param_str);
-      hires::Hires hires(hp);
+      hires::Hires hires(param_str);
 
 // Let's do it!
       hires::Gnomonic projection(hires.crval1,hires.crval2);
@@ -60,7 +59,7 @@ int main(int argc, char* argv[])
    
           if (iter == 0 || find(iter_list.begin(),iter_list.end(),iter) != iter_list.end()) {
 // generate file name here.
-              hires.write_output(iter, hires::Image_Type::all, outfile_prefix);
+            hires.write_output(iter, hires::Hires::Image_Type::all, outfile_prefix);
           }
       } 
     }
