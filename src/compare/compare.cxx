@@ -15,6 +15,23 @@ void read_raw_hdf5(const std::string &filename,
 void read_indexed_hdf5(const std::string &filename,
                        std::vector<indexed_entry> &indexed_entries);
 
+/// Compares the glon and glat of the original hdf5 files received
+/// from the Planck project with the search results obtained through
+/// the web api.  The files should have the same data, so the best way
+/// to do this is to look at a single raw file at a time
+/// (e.g. 100-1a_091.hdf5).  Run planck_to_htm to index it for the web
+/// api.  Then point the web api to that indexed file and do a full
+/// sky search.  
+///
+/// curl -v -o 100-1a_091_result.hdf5 "http://hades.ipac.caltech.edu/TAP/sync?LANG=ADQL&REQUEST=doQuery&QUERY=SELECT+*+FROM+planck_toi_100_1a+WHERE+CONTAINS%28POINT%28%27J2000%27,ra,dec%29,CIRCLE%28%27J2000%27,0,0,179%29%29=1&format=hdf5"
+///
+/// Then run compare against the two files
+///
+/// ./build/compare 100-1a_091.hdf5 100-1a_091_result.hdf5
+///
+/// Both the raw file (100-1a_091.hdf5) and the search result
+/// (100-1a_091_result.hdf5) must have the same number of entries.
+
 int main(int argc, char *argv[])
 {
   if(argc!=3)
