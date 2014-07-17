@@ -80,6 +80,9 @@ int main(int argc, char *argv[])
   const size_t ioblksz(sizeof(planck_tod_entry)*32*1024);
   mem_params mem(memsz, ioblksz);
   const int htm_depth(20);
+// attributes
+  int nattr(0);
+  std::vector<H5::Attribute> avec;
 
   if(argc<3)
     {
@@ -187,6 +190,7 @@ int main(int argc, char *argv[])
                       H5std_string sstr = group.getObjnameByIdx(0);
                       std::cout << sstr.c_str() << "\n";
                       dataset = file.openDataSet(sstr.c_str());
+
                 }
                 catch (H5::Exception &e)
                 {
@@ -194,6 +198,19 @@ int main(int argc, char *argv[])
                               << "specified HDF5 file." << std::endl;
                     continue;
                 }
+
+// Grab the attributes from the first successful file read
+                if (npoints == 0) {
+                    nattr = group.getNumAttrs();
+                    std::cout << "N attr = " << nattr << "\n";
+                    avec.resize(nattr);
+                    for (int i = 0; i < nattr; i++) {
+                       H5::Attribute a = group.openAttribute(i);
+                       std::cout << i << " " << a.getName() << "\n";
+                       avec[i] = a;
+                      }
+                }
+//
                 H5::DataSpace dataspace = dataset.getSpace();
                 hsize_t size;
                 dataspace.getSimpleExtentDims(&size, NULL);
@@ -296,6 +313,19 @@ int main(int argc, char *argv[])
       sort_and_index<planck_tod_entry>(data_file, scratch_file,
                                        htm_file,mem,npoints,
                                        minpoints,leafthresh);
+// Add attributes to indexed file.
+      H5::H5File file2(data_file, H5F_ACC_RDWR);
+      H5::Group group2;
+      group2 = file2.openGroup("/");     
+      H5::Attribute att;
+      std::string str;  	
+      for (int i = 0; i < nattr; i++) {
+          att = group2.createAttribute(avec[i].getName(), 
+                                 avec[i].getDataType(),
+                                 avec[i].getSpace());
+          avec[i].read(avec[i].getDataType(), str);
+          att.write(avec[i].getDataType(), str);
+      }
     }
   catch (H5::Exception &e)
     {
