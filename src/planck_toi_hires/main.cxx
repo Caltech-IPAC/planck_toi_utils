@@ -27,14 +27,14 @@ int main(int argc, char* argv[])
       tinyhtm::Query query(argv[2],argv[3],argv[4]);
 
 // Iterations for which to generate output
-      int iter_max;   
-      std::vector<int> iter_list;
+      size_t iter_max;   
+      std::vector<size_t> iter_list;
       std::vector<std::string> iter_str;
       boost::split(iter_str,argv[5],boost::is_any_of(",\t "));
       for (auto &n_str: iter_str) {
           if (!n_str.empty()) {
               std::stringstream ns(n_str);
-              int n;
+              size_t n;
               ns >> n;
               iter_list.push_back(n);
           }
@@ -54,14 +54,15 @@ int main(int argc, char* argv[])
       samples.emplace_back(fill_samples(query,projection));
 
 
-      for (int iter=0; iter<=iter_max; ++iter) {
-          hires.iterate(iter, samples);
-   
-          if (iter == 0 || find(iter_list.begin(),iter_list.end(),iter) != iter_list.end()) {
-// generate file name here.
-            hires.write_output(iter, hires::Hires::Image_Type::all, outfile_prefix);
-          }
-      } 
+      hires.init(samples);
+      hires.write_output(hires::Hires::Image_Type::all, outfile_prefix);
+      while(hires.iteration<=iter_max)
+        {
+          hires.iterate(samples);
+          if (find(iter_list.begin(),iter_list.end(),hires.iteration)
+              != iter_list.end())
+            hires.write_output(hires::Hires::Image_Type::all, outfile_prefix);
+        } 
     }
   catch(std::runtime_error &e)
     {
