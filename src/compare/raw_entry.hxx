@@ -8,9 +8,5 @@ struct raw_entry
   double utc;
   unsigned char sso;
 
-  bool operator<(const raw_entry &p) const
-  {
-    return utc < p.utc;
-  }
+  bool operator<(const raw_entry &p) const { return utc < p.utc; }
 };
-

@@ -9,9 +9,5 @@ struct indexed_entry
   double glon, glat;
   unsigned char sso;
 
-  bool operator<(const indexed_entry &p) const
-  {
-    return mjd < p.mjd;
-  }
+  bool operator<(const indexed_entry &p) const { return mjd < p.mjd; }
 };
-
