@@ -75,7 +75,8 @@ std::array<H5::DataType,planck_tod_entry::num_elements> planck_tod_entry::types
 
 int main(int argc, char *argv[])
 {
-  const size_t memsz = sizeof(planck_tod_entry)*2*16*64*1024;
+   const size_t memsz = 210*1024*1024*1024L;
+  // const size_t memsz = sizeof(planck_tod_entry)*2*16*64*1024;
   // const size_t memsz = sizeof(planck_tod_entry)*2*16*64*1024*1024;
   const size_t ioblksz(sizeof(planck_tod_entry)*32*1024);
   mem_params mem(memsz, ioblksz);
@@ -314,6 +315,7 @@ int main(int argc, char *argv[])
                                        htm_file,mem,npoints,
                                        minpoints,leafthresh);
 // Add attributes to indexed file.
+      std::cout << "\nAdding attributes... ";
       H5::H5File file2(data_file, H5F_ACC_RDWR);
       H5::Group group2;
       group2 = file2.openGroup("/");     
@@ -326,6 +328,7 @@ int main(int argc, char *argv[])
           avec[i].read(avec[i].getDataType(), str);
           att.write(avec[i].getDataType(), str);
       }
+      std::cout << " done.\n";
     }
   catch (H5::Exception &e)
     {
