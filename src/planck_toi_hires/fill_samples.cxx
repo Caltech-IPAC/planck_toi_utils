@@ -9,70 +9,70 @@
 
 hires::Sample sample;
 std::vector<double> lon, lat, flux;
-hires::Gnomonic projection(0,0);
+hires::Gnomonic projection (0, 0);
 
-int callback(void *void_entry, int num_elements, hid_t *, char **names)
+int callback (void *void_entry, int num_elements, hid_t *, char **names)
 {
-  char *entry=static_cast<char *>(void_entry);
-  double x,y,z,flux_entry;
-  const int offsets[] = {0, 4, 8, 12, 16, 24, 28};
+  char *entry = static_cast<char *>(void_entry);
+  double x, y, z, flux_entry;
+  const int offsets[] = { 0, 4, 8, 12, 16, 24, 28 };
   void *p;
 
-  for(int i=0;i<num_elements;++i)
+  for (int i = 0; i < num_elements; ++i)
     {
       p = entry + offsets[i];
 
-      if(0==std::strcmp(names[i],"x"))
+      if (0 == std::strcmp (names[i], "x"))
         {
-          x=*((float *)p);
+          x = *((float *)p);
         }
-      else if(0==std::strcmp(names[i],"y"))
+      else if (0 == std::strcmp (names[i], "y"))
         {
-          y=*((float *)p);
+          y = *((float *)p);
         }
-      else if(0==std::strcmp(names[i],"z"))
+      else if (0 == std::strcmp (names[i], "z"))
         {
-          z=*((float *)p);
+          z = *((float *)p);
         }
-      else if(0==std::strcmp(names[i],"TSKY"))
+      else if (0 == std::strcmp (names[i], "TSKY"))
         {
-          flux_entry=*((float *)p);
+          flux_entry = *((float *)p);
         }
-      else if(0==std::strcmp(names[i],"MJD"))
-        {
-        }
-      else if(0==std::strcmp(names[i],"PSI"))
+      else if (0 == std::strcmp (names[i], "MJD"))
         {
         }
-      else if(0==std::strcmp(names[i],"SSO"))
+      else if (0 == std::strcmp (names[i], "PSI"))
         {
         }
-     else
-       throw std::runtime_error("Unknown type: " + std::string(names[i]));
+      else if (0 == std::strcmp (names[i], "SSO"))
+        {
+        }
+      else
+        throw std::runtime_error ("Unknown type: " + std::string (names[i]));
     }
   /* FIXME: Do selection based on utc */
-  tinyhtm::Spherical coord(tinyhtm::Cartesian(x,y,z));
-  std::tie(x,y)=projection.lonlat2xy(projection.radians(coord.lon()),
-                                     projection.radians(coord.lat()));
+  tinyhtm::Spherical coord (tinyhtm::Cartesian (x, y, z));
+  std::tie (x, y) = projection.lonlat2xy (projection.radians (coord.lon ()),
+                                          projection.radians (coord.lat ()));
 
-  lon.push_back(x);
-  lat.push_back(y);
-  flux.push_back(flux_entry);
+  lon.push_back (x);
+  lat.push_back (y);
+  flux.push_back (flux_entry);
   return 1;
 }
 
-hires::Sample fill_samples(const tinyhtm::Query &query,
-                           const hires::Gnomonic &Projection)
+hires::Sample fill_samples (const tinyhtm::Query &query,
+                            const hires::Gnomonic &Projection)
 {
-  projection=Projection;
-  query.search(callback);
-  if(lon.size()!=lat.size() || lon.size()!=flux.size())
-    throw std::runtime_error("INTERNAL ERROR: sizes do not match");
+  projection = Projection;
+  query.search (callback);
+  if (lon.size () != lat.size () || lon.size () != flux.size ())
+    throw std::runtime_error ("INTERNAL ERROR: sizes do not match");
 
-  sample.x=std::valarray<double>(lon.data(),lon.size());
-  sample.y=std::valarray<double>(lat.data(),lat.size());
-  sample.flux=std::valarray<double>(flux.data(),flux.size());
-  sample.angle=std::valarray<double>(0.0,flux.size());
-  sample.id=1;
+  sample.x = std::valarray<double>(lon.data (), lon.size ());
+  sample.y = std::valarray<double>(lat.data (), lat.size ());
+  sample.flux = std::valarray<double>(flux.data (), flux.size ());
+  sample.angle = std::valarray<double>(0.0, flux.size ());
+  sample.id = 1;
   return sample;
 }
