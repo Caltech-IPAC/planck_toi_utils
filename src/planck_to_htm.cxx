@@ -276,7 +276,7 @@ int main (int argc, char *argv[])
 
                     entry.psi = hdf_entry.psi;
                     const double MJD_1958_01_01=36204.0;
-                    entry.mjd = MJD_1958_01_01 + hdf_entry.utc / 1.0e9 / 86400.0;
+                    entry.mjd = MJD_1958_01_01 + hdf_entry.utc / 86400.0;
                     entry.tsky = hdf_entry.tsky;
                     entry.sso = hdf_entry.sso;
 
