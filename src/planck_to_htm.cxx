@@ -293,49 +293,6 @@ int main (int argc, char *argv[])
                   out.append(&entry);
              }
             std::cout << "# entries processed = " << nentries << "\n";
-             
-            try { dataset.read (hdf_entries.data (), compound); }
-            catch (H5::Exception &e)
-            {
-              std::cout << "Warning:: Failed to read dataset in "
-                        << "specified HDF5 file." << std::endl;
-            }
-
-            for (auto &hdf_entry : hdf_entries)
-              {
-                nentries++;
-                planck_tod_entry entry;
-
-                entry.psi = hdf_entry.psi;
-                const double MJD_1958_01_01 = 36204.0;
-                entry.mjd = MJD_1958_01_01 + hdf_entry.utc / 86400.0;
-                entry.tsky = hdf_entry.tsky;
-                entry.sso = hdf_entry.sso;
-
-                double ra = hdf_entry.glon;
-                double dec = hdf_entry.glat;
-                wcscon (WCS_GALACTIC, WCS_J2000, 0, 0, &ra, &dec, 1950);
-                if (htm_sc_init (&entry.sc, ra, dec) != HTM_OK)
-                  {
-                    std::stringstream ss;
-                    ss << "Bad latitude or longitude in record: "
-                       << " lon: " << hdf_entry.glon
-                       << " lat: " << hdf_entry.glat << "\n";
-                    throw std::runtime_error (ss.str ());
-                  }
-                struct htm_v3 v;
-                if (htm_sc_tov3 (&v, &entry.sc) != HTM_OK)
-                  {
-                    std::stringstream ss;
-                    ss << "Could not convert lon/lat to a vector in record: "
-                       << " lon: " << hdf_entry.glon
-                       << " lat: " << hdf_entry.glat << "\n";
-                    throw std::runtime_error (ss.str ());
-                  }
-                entry.htmid = htm_v3_id (&v, htm_depth);
-                out.append (&entry);
-              }
-            std::cout << "# entries processed = " << nentries << "\n";
           }
         else
           {
