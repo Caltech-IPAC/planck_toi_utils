@@ -57,6 +57,14 @@ def build(ctx):
     )
 
     ctx.program(
+        source=['src/add_string_attribute.cxx'],
+        target='add_string_attribute',
+        name='add_string_attribute',
+        install_path=os.path.join(ctx.env.PREFIX, 'bin'),
+        use='hdf5_cxx boost'
+    )
+
+    ctx.program(
         source=[
             'src/planck_toi_search/main.cxx',
             'src/planck_toi_search/Results.cxx'],
@@ -74,5 +82,5 @@ def build(ctx):
         target='planck_toi_hires',
         name='planck_toi_hires',
         install_path=os.path.join(ctx.env.PREFIX, 'bin'),
-        use=['ccfits','boost','hdf5','hdf5_cxx','armadillo','tinyhtm','tinyhtm_cxx','hires', 'wcs']
+        use=['cfitsio','CCfits','boost','hdf5','hdf5_cxx','armadillo','tinyhtm','tinyhtm_cxx','hires', 'wcs']
     )
