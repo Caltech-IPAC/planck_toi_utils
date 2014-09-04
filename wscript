@@ -65,6 +65,14 @@ def build(ctx):
     )
 
     ctx.program(
+        source=['src/remove_attribute.cxx'],
+        target='remove_attribute',
+        name='remove_attribute',
+        install_path=os.path.join(ctx.env.PREFIX, 'bin'),
+        use='hdf5_cxx boost'
+    )
+
+    ctx.program(
         source=[
             'src/planck_toi_search/main.cxx',
             'src/planck_toi_search/Results.cxx'],
