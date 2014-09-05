@@ -86,7 +86,8 @@ def build(ctx):
     ctx.program(
         source=[
             'src/planck_toi_hires/main.cxx',
-            'src/planck_toi_hires/fill_samples.cxx'],
+            'src/planck_toi_hires/fill_samples.cxx',
+            'src/planck_toi_hires/fill_samples_from_fits.cxx'],
         target='planck_toi_hires',
         name='planck_toi_hires',
         install_path=os.path.join(ctx.env.PREFIX, 'bin'),
