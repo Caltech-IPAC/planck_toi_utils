@@ -4,8 +4,9 @@
 #include "Results.hxx"
 #include "tinyhtm.h"
 
-bool Results::callback (void *void_entry, int num_elements, hid_t *,
-                        char **names)
+bool Results::callback (void *void_entry, int num_elements,
+                        const std::vector<H5::DataType> &,
+                        const std::vector<std::string> &names)
 {
   char *entry = static_cast<char *>(void_entry);
   const int offsets[] = { 0, 4, 8, 12, 16, 24, 28 };

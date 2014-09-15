@@ -11,7 +11,10 @@ hires::Sample sample;
 std::vector<double> lon, lat, flux;
 hires::Gnomonic projection (0, 0);
 
-int callback (void *void_entry, int num_elements, hid_t *, char **names)
+int callback (void *void_entry, int num_elements,
+              const std::vector<H5::DataType> &,
+              const std::vector<std::string> &names)
+
 {
   char *entry = static_cast<char *>(void_entry);
   double x, y, z, flux_entry;
@@ -22,33 +25,33 @@ int callback (void *void_entry, int num_elements, hid_t *, char **names)
     {
       p = entry + offsets[i];
 
-      if (0 == std::strcmp (names[i], "x"))
+      if (names[i]=="x")
         {
           x = *((float *)p);
         }
-      else if (0 == std::strcmp (names[i], "y"))
+      else if (names[i]=="y")
         {
           y = *((float *)p);
         }
-      else if (0 == std::strcmp (names[i], "z"))
+      else if (names[i]=="z")
         {
           z = *((float *)p);
         }
-      else if (0 == std::strcmp (names[i], "TSKY"))
+      else if (names[i]=="TSKY")
         {
           flux_entry = *((float *)p);
         }
-      else if (0 == std::strcmp (names[i], "MJD"))
+      else if (names[i]=="MJD")
         {
         }
-      else if (0 == std::strcmp (names[i], "PSI"))
+      else if (names[i]=="PSI")
         {
         }
-      else if (0 == std::strcmp (names[i], "SSO"))
+      else if (names[i]=="SSO")
         {
         }
       else
-        throw std::runtime_error ("Unknown type: " + std::string (names[i]));
+        throw std::runtime_error ("Unknown type: " + names[i]);
     }
   /* FIXME: Do selection based on utc */
   tinyhtm::Spherical coord (tinyhtm::Cartesian (x, y, z));

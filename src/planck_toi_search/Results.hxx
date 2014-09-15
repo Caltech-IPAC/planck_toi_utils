@@ -22,7 +22,9 @@ public:
       sso_index;
   bool valid, count;
 
-  bool callback (void *entry, int num_elements, hid_t *, char **names);
+  bool callback (void *entry, int num_elements,
+                 const std::vector<H5::DataType> &types,
+                 const std::vector<std::string> &names);
 
   Results (std::list<std::pair<double, double> > &t)
       : time_intervals (t), x_index (-1), y_index (-1), z_index (-1),
