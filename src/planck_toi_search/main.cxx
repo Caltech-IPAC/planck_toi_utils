@@ -30,6 +30,8 @@ int main (int argc, char *argv[])
       std::cerr << "Usage: $ planck_toi_search (circle | box | poly) {coords} "
                    "{time ranges} {output_file} {input_file1} {input_file2} "
                    "...\n";
+      std::cerr << "Example: $ planck_toi_search circle \"10 10 1\" "
+                   "\"\" out.fits input1.fits input2.hdf5\n";
       exit (1);
     }
   try
