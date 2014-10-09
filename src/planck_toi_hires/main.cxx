@@ -10,6 +10,8 @@ hires::Sample fill_samples (const tinyhtm::Query &query,
 hires::Sample fill_samples_from_fits(std::map<std::string, CCfits::Column *> &columns,
                             const hires::Gnomonic &Projection);
 
+void add_keywords_from_fits(string filename_toi, std::vector<string> filename_list);
+
 int main (int argc, char *argv[])
 {
   if (argc < 7)
@@ -71,23 +73,36 @@ int main (int argc, char *argv[])
 
         CCfits::BinTable *image(dynamic_cast<CCfits::BinTable *>(&img));
         std::map<std::string, CCfits::Column *> &columns(image->column());
-
         samples.emplace_back(fill_samples_from_fits(columns, projection));
     } else {
         std::cerr << "Invalid file type\n";
         exit (1);
     }
 
-
     hires.init (samples);
-    hires.write_output (hires::Hires::Image_Type::all, outfile_prefix);
+    std::vector<std::string> outfile_list;
+    outfile_list = hires.write_output_worker (hires::Hires::Image_Type::all, outfile_prefix);
+    if (boost::iequals(path.extension().string(), ".fits") && outfile_list.size() > 0) {
+        add_keywords_from_fits(path.string(), outfile_list);
+    } 
+
     while (hires.iteration <= iter_max)
       {
         hires.iterate (samples);
         if (find (iter_list.begin (), iter_list.end (), hires.iteration)
-            != iter_list.end ())
-          hires.write_output (hires::Hires::Image_Type::all, outfile_prefix);
+            != iter_list.end ()) {
+          outfile_list = hires.write_output_worker (hires::Hires::Image_Type::all, outfile_prefix);
+          if (boost::iequals(path.extension().string(), ".hdf") ||
+              boost::iequals(path.extension().string(), ".h5") ||
+              boost::iequals(path.extension().string(), ".hdf5")) {
+//
+// Pending implementation of add_keywords_from_hdf()
+//
+          } else if (boost::iequals(path.extension().string(), ".fits") && outfile_list.size() > 0) {
+              add_keywords_from_fits(path.string(), outfile_list);
+          } 
       }
+  } 
   }
   catch (std::runtime_error &e)
   {

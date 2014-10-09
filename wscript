@@ -73,6 +73,14 @@ def build(ctx):
     )
 
     ctx.program(
+        source=['src/rename_dataset.cxx'],
+        target='rename_dataset',
+        name='rename_dataset',
+        install_path=os.path.join(ctx.env.PREFIX, 'bin'),
+        use='hdf5_cxx boost'
+    )
+
+    ctx.program(
         source=[
             'src/planck_toi_search/main.cxx',
             'src/planck_toi_search/Results.cxx'],
@@ -86,6 +94,7 @@ def build(ctx):
     ctx.program(
         source=[
             'src/planck_toi_hires/main.cxx',
+            'src/planck_toi_hires/add_keywords_from_fits.cxx',
             'src/planck_toi_hires/fill_samples.cxx',
             'src/planck_toi_hires/fill_samples_from_fits.cxx'],
         target='planck_toi_hires',
