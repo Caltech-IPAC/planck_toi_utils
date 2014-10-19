@@ -1,0 +1,11 @@
+{
+    output_prefix:"test/hires_single_point",
+    drf_file:"share/hires/beams/DRF_030.fits",
+    input_file:"test/hires_single_point.fits",
+    iterations:0,
+    pos:
+    {
+        frame:"galactic",
+        angResolution:0.0001 
+    }
+}

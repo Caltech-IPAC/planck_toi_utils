@@ -1,97 +1,141 @@
-#include "tinyhtm/Query.hxx"
-#include "Hires.hxx"
-#include "Gnomonic.hxx"
+#include <set>
+#include <array>
+
 #include <CCfits/CCfits>
 #include <boost/filesystem.hpp>
 
-hires::Sample fill_samples (const tinyhtm::Query &query,
-                            const hires::Gnomonic &Projection);
+#include "tinyhtm/Query.hxx"
+#include "tinyhtm/Shape.hxx"
+#include "tinyhtm/Spherical.hxx"
+#include "tinyhtm/Shape.hxx"
+#include "Hires.hxx"
+#include "Gnomonic.hxx"
+#include "json5_parser.h"
+#include "tablator/Format.hxx"
 
-hires::Sample fill_samples_from_fits(std::map<std::string, CCfits::Column *> &columns,
-                            const hires::Gnomonic &Projection);
+#include "Coordinate_Frame.hxx"
+
+void usage(std::ostream &os)
+{
+  os << "Usage: planck_toi_hires FILE\n"
+     << "       planck_toi_hires --query=QUERY\n"
+     << "FILE must be a valid json5 file.  QUERY must be a valid\n"
+     << "json5 object\n"
+     << "To read from standard input, set FILE to '-'.\n";
+}
+
+hires::Sample get_sample_from_query
+(const std::string &data_file,
+ const std::unique_ptr<tinyhtm::Shape> &shape,
+ const hires::Gnomonic &Projection);
+
+void get_sample_from_table(const boost::filesystem::path &path,
+                           const std::map<std::string,std::string> &columns,
+                           const bool &shape_valid,
+                           std::vector<hires::Sample> &samples,
+                           tinyhtm::Spherical &center, tinyhtm::Spherical &size);
+
+void read_input(json5_parser::mValue &json5, const std::string &arg,
+                std::string &output_prefix, std::string &input_file,
+                boost::filesystem::path &drf_file,
+                std::map<std::string,std::string> &columns,
+                Coordinate_Frame &coordinate_frame,
+                std::set<int> &iterations,
+                bool &generate_beams,
+                std::string &boost_function_string,
+                std::unique_ptr<tinyhtm::Shape> &shape,
+                std::vector<std::pair<std::string, std::pair<std::string,
+                                                             std::string> > >
+                &keywords,
+                double &angResolution);
 
 int main (int argc, char *argv[])
 {
-  if (argc < 7)
+  if(argc!=2)
     {
-      std::cerr << "Need at least 6 arguments.  Only got " << argc - 1 << "\n";
-      std::cerr << "\t1: output file prefix\n";
-      std::cerr << "\t2: input TOI file\n";
-      std::cerr << "\t3: query type\n";
-      std::cerr << "\t4: query parameters\n";
-      std::cerr << "\t5: hires iteration output list\n";
-      std::cerr << "\t6: parameter definitions\n";
-      std::cerr
-          << "\tAt least one parameter definition (PARAM=VAL) required!\n";
-      exit (1);
-    }
-  try
-  {
-    // Process command line arguments
-    std::string outfile_prefix (argv[1]);
-    boost::filesystem::path path(argv[2]);
-    
-    // Iterations for which to generate output
-    size_t iter_max;
-    std::vector<size_t> iter_list;
-    std::vector<std::string> iter_str;
-    boost::split (iter_str, argv[5], boost::is_any_of (",\t "));
-    for (auto &n_str : iter_str)
-      {
-        if (!n_str.empty ())
-          {
-            std::stringstream ns (n_str);
-            size_t n;
-            ns >> n;
-            iter_list.push_back (n);
-          }
-      }
-    std::sort (iter_list.begin (), iter_list.end ());
-    iter_list.resize (std::unique (iter_list.begin (), iter_list.end ())
-                      - iter_list.begin ());
-    iter_max = iter_list.back ();
-
-    // HIRES parameters
-    std::vector<std::string> param_str (&(argv[6]), &(argv[argc]));
-    hires::Hires hires (param_str);
-    hires::Gnomonic projection (hires.crval1, hires.crval2);
-    // and the HIRES samples
-    std::vector<hires::Sample> samples;
-
-    if (boost::iequals(path.extension().string(), ".hdf") ||
-       boost::iequals(path.extension().string(), ".h5") ||
-       boost::iequals(path.extension().string(), ".hdf5")) {
-    // htm_file shape vertex_string
-        tinyhtm::Query query(argv[2], argv[3], argv[4]);
-        samples.emplace_back(fill_samples(query, projection));
-    } else if (boost::iequals(path.extension().string(), ".fits")) {
-    // extracted FITS finary table - no need to query.
-        CCfits::FITS fits_file(argv[2], CCfits::Read, false);
-        CCfits::ExtHDU &img = fits_file.extension(1);
-
-        CCfits::BinTable *image(dynamic_cast<CCfits::BinTable *>(&img));
-        std::map<std::string, CCfits::Column *> &columns(image->column());
-
-        samples.emplace_back(fill_samples_from_fits(columns, projection));
-    } else {
-        std::cerr << "Invalid file type\n";
-        exit (1);
+      std::cerr << "Wrong number of arguments.  Got " << argc-1 << "\n";
+      usage(std::cerr);
+      exit(1);
     }
 
+  std::string argument(argv[1]);
+  if(argument=="-h" || argument=="--help")
+    {
+      usage(std::cout);
+      exit(0);
+    }
+      
+  json5_parser::mValue json5;
 
-    hires.init (samples);
-    hires.write_output (hires::Hires::Image_Type::all, outfile_prefix);
-    while (hires.iteration <= iter_max)
-      {
-        hires.iterate (samples);
-        if (find (iter_list.begin (), iter_list.end (), hires.iteration)
-            != iter_list.end ())
-          hires.write_output (hires::Hires::Image_Type::all, outfile_prefix);
-      }
-  }
-  catch (std::runtime_error &e)
-  {
-    std::cerr << e.what () << "\n";
-    exit (1);
-  }
+  // try
+    {
+      std::string output_prefix, input_file;
+      boost::filesystem::path drf_file("share/hires/beams");
+      std::map<std::string,std::string> columns={{"ra","ra"},{"dec","dec"},
+                                                 {"signal","tsky"},
+                                                 {"psi","psi"}};
+      Coordinate_Frame coordinate_frame=Coordinate_Frame::ICRS;
+      bool generate_beams=false;
+      double angResolution;
+      std::string boost_function_string;
+      std::set<int> iterations;
+      std::unique_ptr<tinyhtm::Shape> shape;
+      std::vector<std::pair<std::string, std::pair<std::string,
+                                                   std::string> > > keywords;
+      read_input(json5,argument,output_prefix,input_file,drf_file,
+                 columns,coordinate_frame,iterations,generate_beams,
+                 boost_function_string,shape,keywords,
+                 angResolution);
+
+      /// Load the samples
+      std::vector<hires::Sample> samples;
+
+      tinyhtm::Spherical center, size;
+      if(shape)
+        std::tie(center,size)=shape->bounding_box();
+
+      boost::filesystem::path path(input_file);
+      if(Tablator::Format(path).is_hdf5() &&
+         H5::H5File(input_file, H5F_ACC_RDONLY).getNumObjs()==2)
+        {
+          if(!shape)
+            throw std::runtime_error("Shape required for this input file: "
+                                     + input_file);
+          hires::Gnomonic projection (center.lon(),center.lat());
+          samples.emplace_back(get_sample_from_query(input_file, shape,
+                                                     projection));
+        }
+      else
+        {
+          get_sample_from_table(path, columns, shape.operator bool(),
+                                samples, center, size);
+        }
+
+      std::array<int,2> nxy{{static_cast<int>(size.lon()/angResolution),
+            static_cast<int>(size.lat()/angResolution)}};
+      std::array<double,2> crval{{center.lon(),center.lat()}};
+
+      std::cout << "Hires "
+                << nxy[0] << " " << nxy[1] << " "
+                << crval[0] << " " << crval[1] << " "
+                << size.lon() << " " << size.lat() << " "
+                << "\n";
+      constexpr double pi=atan(1.0)*4;
+      hires::Hires hires (nxy,crval,angResolution*pi/180,generate_beams,
+                          drf_file,boost_function_string,keywords,samples);
+      hires.init ();
+      hires.write_output (hires::Hires::Image_Type::all, output_prefix);
+      const size_t iter_max=*iterations.rbegin();
+      while (hires.iteration <= iter_max)
+        {
+          hires.iterate (false);
+          if (iterations.find (hires.iteration) != iterations.end ())
+            hires.write_output (hires::Hires::Image_Type::all, output_prefix);
+        }
+    }
+  // catch (std::runtime_error &e)
+  //   {
+  //     std::cerr << "ERROR: " << e.what () << "\n";
+  //     exit (1);
+  //   }
 }

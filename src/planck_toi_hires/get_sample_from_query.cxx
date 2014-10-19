@@ -1,6 +1,10 @@
 #include <cstring>
+
 #include <boost/math/constants/constants.hpp>
+#include <boost/filesystem.hpp>
+
 #include "tinyhtm/Query.hxx"
+#include "tinyhtm/Shape.hxx"
 #include "tinyhtm/Spherical.hxx"
 #include "tinyhtm/Cartesian.hxx"
 #include "Hires.hxx"
@@ -55,8 +59,7 @@ int callback (void *void_entry, int num_elements,
     }
   /* FIXME: Do selection based on utc */
   tinyhtm::Spherical coord (tinyhtm::Cartesian (x, y, z));
-  std::tie (x, y) = projection.lonlat2xy (projection.radians (coord.lon ()),
-                                          projection.radians (coord.lat ()));
+  std::tie (x, y) = projection.degrees_to_xy (coord.lon (), coord.lat ());
 
   lon.push_back (x);
   lat.push_back (y);
@@ -64,18 +67,22 @@ int callback (void *void_entry, int num_elements,
   return 1;
 }
 
-hires::Sample fill_samples (const tinyhtm::Query &query,
-                            const hires::Gnomonic &Projection)
+hires::Sample get_sample_from_query
+(const std::string &data_file,
+ const std::unique_ptr<tinyhtm::Shape> &shape,
+ const hires::Gnomonic &Projection)
 {
   projection = Projection;
-  query.search (callback);
+  tinyhtm::Tree tree(data_file);
+  shape->search (tree, callback);
   if (lon.size () != lat.size () || lon.size () != flux.size ())
     throw std::runtime_error ("INTERNAL ERROR: sizes do not match");
 
   sample.x = std::valarray<double>(lon.data (), lon.size ());
   sample.y = std::valarray<double>(lat.data (), lat.size ());
-  sample.flux = std::valarray<double>(flux.data (), flux.size ());
+  sample.signal = std::valarray<double>(flux.data (), flux.size ());
   sample.angle = std::valarray<double>(0.0, flux.size ());
+  // FIXME: We should really get rid of this
   sample.id = 1;
   return sample;
 }
