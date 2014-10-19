@@ -1,8 +1,13 @@
 {
-    output_prefix:"test/hires_single_point",
-    drf_file:"share/hires/beams/DRF_030.fits",
     input_file:"test/hires_single_point.fits",
-    iterations:0,
+    drf_file:"share/hires/beams/DRF_030.fits",
+    iterations:1,
+    output:
+    {
+        prefix:"test/hires_single_point",
+        minimap:["image","hitmap",],
+        hires:["image","covariance","correction","beam"]
+    },
     pos:
     {
         frame:"galactic",

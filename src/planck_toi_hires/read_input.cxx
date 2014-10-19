@@ -10,6 +10,7 @@
 #include "tinyhtm/Circle.hxx"
 #include "tinyhtm/Box.hxx"
 #include "tinyhtm/Polygon.hxx"
+#include "Hires.hxx"
 
 #include "json5_parser.h"
 
@@ -30,10 +31,10 @@ tinyhtm::Spherical extract_position(const json5_parser::mValue &value)
 void read_input(json5_parser::mValue &json5, const std::string &arg,
                 std::string &output_prefix, std::string &input_file,
                 boost::filesystem::path &drf_file,
+                std::set<hires::Hires::Image_Type> &output_types,
                 std::map<std::string,std::string> &columns,
                 Coordinate_Frame &coordinate_frame,
                 std::set<int> &iterations,
-                bool &generate_beams,
                 std::string &boost_function_string,
                 std::unique_ptr<tinyhtm::Shape> &shape,
                 std::vector<std::pair<std::string, std::pair<std::string,
@@ -68,13 +69,74 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
     throw std::runtime_error("Invalid json5 type.  It must be an object.");
 
   angResolution=0;
+  bool running_hires(false);
   for(auto &v: json5.get_obj())
     {
-      if(v.first=="output_prefix")
+      if(v.first=="output")
         {
-          if(v.second.type()!=json5_parser::str_type)
-            throw std::runtime_error("Expected a string for 'output_prefix'");
-          output_prefix=v.second.get_str();
+          if(v.second.type()!=json5_parser::obj_type)
+            throw std::runtime_error("Expected an object for 'output'");
+          for(auto &o: v.second.get_obj ())
+            {
+              if(o.first=="prefix")
+                {
+                  if(o.second.type()!=json5_parser::str_type)
+                    throw std::runtime_error("Expected a string for "
+                                             "'output.prefix'");
+                  output_prefix=o.second.get_str();
+                }
+              else if(o.first=="minimap")
+                {
+                  if(o.second.type()!=json5_parser::array_type)
+                    throw std::runtime_error("Expected an array for "
+                                             "'output.minimap'");
+                  for(auto &m: o.second.get_array ())
+                    {
+                      if(m.type()!=json5_parser::str_type)
+                        throw std::runtime_error("Expected only strings in the "
+                                                 "'output.minimap' array");
+                      if(m.get_str()=="image")
+                        output_types.insert(hires::Hires::Image_Type
+                                            ::minimap_image);
+                      else if(m.get_str()=="hitmap")
+                        output_types.insert(hires::Hires::Image_Type
+                                            ::minimap_hitmap);
+                      else
+                        throw std::runtime_error("Expected either 'image' or "
+                                                 "'hitmap' in 'output.minimap'");
+                    }
+                }
+              else if(o.first=="hires")
+                {
+                  running_hires=true;
+                  if(o.second.type()!=json5_parser::array_type)
+                    throw std::runtime_error("Expected an array for "
+                                             "'output.hires'");
+                  for(auto &m: o.second.get_array ())
+                    {
+                      if(m.type()!=json5_parser::str_type)
+                        throw std::runtime_error("Expected only strings in the "
+                                                 "'output.hires' array");
+                      if(m.get_str()=="image")
+                        output_types.insert(hires::Hires::Image_Type
+                                            ::hires_image);
+                      else if(m.get_str()=="covariance")
+                        output_types.insert(hires::Hires::Image_Type
+                                            ::hires_covariance);
+                      else if(m.get_str()=="correction")
+                        output_types.insert(hires::Hires::Image_Type
+                                            ::hires_correction);
+                      else if(m.get_str()=="beam")
+                        output_types.insert(hires::Hires::Image_Type
+                                            ::hires_beam);
+                      else
+                        throw std::runtime_error
+                          ("Expected either 'image', 'covariance', "
+                           "'correction', or 'beam' in 'output.hires'");
+                    }
+                }
+            }
+
         }
       else if(v.first=="input_file")
         {
@@ -106,12 +168,6 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
               throw std::runtime_error("Expected an int or an array of int's "
                                        "for 'iterations'");
             }
-        }
-      else if(v.first=="generate_beams")
-        {
-          if(v.second.type()!=json5_parser::bool_type)
-            throw std::runtime_error("Expected a bool for 'generate_beams'");
-          generate_beams=v.second.get_bool();
         }
       else if(v.first=="boost_function")
         {
@@ -238,7 +294,8 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
               else if(element.first=="angResolution")
                 {
                   if(element.second.type()!=json5_parser::real_type)
-                    throw std::runtime_error("Expected a number for 'pos.angResolution'");
+                    throw std::runtime_error("Expected a number for "
+                                             "'pos.angResolution'");
 
                   angResolution=element.second.get_real();
                   if(angResolution<=0)
@@ -304,13 +361,12 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
     throw std::runtime_error("output_prefix required");
   if(input_file.empty())
     throw std::runtime_error("input_file required");
-  if(iterations.empty())
-    throw std::runtime_error("iterations required");
+  if(running_hires && iterations.empty())
+    throw std::runtime_error("iterations required when running hires");
   if(angResolution==0)
     throw std::runtime_error("pos.angResolution required");
   
-  if((iterations.size()!=1 || *iterations.begin()!=0)
-     && (!boost::filesystem::exists(drf_file.parent_path())
-         || !is_directory(drf_file.parent_path())))
-    throw std::runtime_error("drf_file must include an existing directory");
+  if(running_hires && !boost::filesystem::exists(drf_file))
+    throw std::runtime_error("drf_file :" + drf_file.string ()
+                             + "does not exist");
 }

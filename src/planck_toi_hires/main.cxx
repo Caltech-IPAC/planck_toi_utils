@@ -38,10 +38,10 @@ void get_sample_from_table(const boost::filesystem::path &path,
 void read_input(json5_parser::mValue &json5, const std::string &arg,
                 std::string &output_prefix, std::string &input_file,
                 boost::filesystem::path &drf_file,
+                std::set<hires::Hires::Image_Type> &output_types,
                 std::map<std::string,std::string> &columns,
                 Coordinate_Frame &coordinate_frame,
                 std::set<int> &iterations,
-                bool &generate_beams,
                 std::string &boost_function_string,
                 std::unique_ptr<tinyhtm::Shape> &shape,
                 std::vector<std::pair<std::string, std::pair<std::string,
@@ -75,15 +75,15 @@ int main (int argc, char *argv[])
                                                  {"signal","tsky"},
                                                  {"psi","psi"}};
       Coordinate_Frame coordinate_frame=Coordinate_Frame::ICRS;
-      bool generate_beams=false;
       double angResolution;
       std::string boost_function_string;
       std::set<int> iterations;
       std::unique_ptr<tinyhtm::Shape> shape;
       std::vector<std::pair<std::string, std::pair<std::string,
                                                    std::string> > > keywords;
+      std::set<hires::Hires::Image_Type> output_types;
       read_input(json5,argument,output_prefix,input_file,drf_file,
-                 columns,coordinate_frame,iterations,generate_beams,
+                 output_types,columns,coordinate_frame,iterations,
                  boost_function_string,shape,keywords,
                  angResolution);
 
@@ -116,17 +116,21 @@ int main (int argc, char *argv[])
       std::array<double,2> crval{{center.lon(),center.lat()}};
 
       constexpr double pi=atan(1.0)*4;
-      hires::Hires hires (nxy,crval,angResolution*pi/180,generate_beams,
-                          drf_file,boost_function_string,keywords,samples);
+      hires::Hires hires (nxy,crval,angResolution*pi/180,output_types,drf_file,
+                          boost_function_string,keywords,samples);
       hires.init ();
-      hires.write_output (hires::Hires::Image_Type::all, output_prefix);
-      const size_t iter_max=*iterations.rbegin();
-      while (hires.iteration <= iter_max)
+      hires.write_output (output_prefix);
+      const size_t iter_max=iterations.empty() ? 0 : *iterations.rbegin() + 1;
+      while (hires.iteration < iter_max)
         {
           hires.iterate (false);
           if (iterations.find (hires.iteration) != iterations.end ())
-            hires.write_output (hires::Hires::Image_Type::all, output_prefix);
+            hires.write_output (output_prefix);
         }
+    }
+  catch (CCfits::FitsError &e)
+    {
+      std::cerr << "ERROR: " << e.message() << "\n";
     }
   catch (std::runtime_error &e)
     {
