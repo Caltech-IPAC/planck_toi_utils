@@ -67,7 +67,7 @@ int main (int argc, char *argv[])
       
   json5_parser::mValue json5;
 
-  // try
+  try
     {
       std::string output_prefix, input_file;
       boost::filesystem::path drf_file("share/hires/beams");
@@ -115,11 +115,6 @@ int main (int argc, char *argv[])
             static_cast<int>(size.lat()/angResolution)}};
       std::array<double,2> crval{{center.lon(),center.lat()}};
 
-      std::cout << "Hires "
-                << nxy[0] << " " << nxy[1] << " "
-                << crval[0] << " " << crval[1] << " "
-                << size.lon() << " " << size.lat() << " "
-                << "\n";
       constexpr double pi=atan(1.0)*4;
       hires::Hires hires (nxy,crval,angResolution*pi/180,generate_beams,
                           drf_file,boost_function_string,keywords,samples);
@@ -133,9 +128,9 @@ int main (int argc, char *argv[])
             hires.write_output (hires::Hires::Image_Type::all, output_prefix);
         }
     }
-  // catch (std::runtime_error &e)
-  //   {
-  //     std::cerr << "ERROR: " << e.what () << "\n";
-  //     exit (1);
-  //   }
+  catch (std::runtime_error &e)
+    {
+      std::cerr << "ERROR: " << e.what () << "\n";
+      exit (1);
+    }
 }

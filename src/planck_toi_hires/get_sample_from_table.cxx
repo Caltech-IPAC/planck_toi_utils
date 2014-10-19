@@ -70,17 +70,6 @@ void get_sample_from_table(const boost::filesystem::path &path,
     psi_offset(table.compound_type.getMemberOffset
                (table.compound_type.getMemberIndex(columns.at("psi"))));
 
-  std::cout << "indices: "
-            << ra_offset << " "
-            << dec_offset << " "
-            << signal_offset << " "
-            << psi_offset << " "
-            << table.compound_type.getMemberIndex(columns.at("ra")) << " "
-            << table.compound_type.getMemberIndex(columns.at("dec")) << " "
-            << table.compound_type.getMemberIndex(columns.at("signal")) << " "
-            << table.compound_type.getMemberIndex(columns.at("psi")) << " "
-            << "\n";
-          
   size_t num_rows=table.size();
   for(size_t row=0; row<num_rows; ++row)
     {
