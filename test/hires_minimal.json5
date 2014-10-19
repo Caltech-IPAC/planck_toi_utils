@@ -1,0 +1,12 @@
+{
+    input_file:"test/hires_minimal.fits",
+    output:
+    {
+        prefix:"test/hires_minimal",
+        minimap:["image"]
+    },
+    pos:
+    {
+        angResolution:0.01 
+    }
+}
