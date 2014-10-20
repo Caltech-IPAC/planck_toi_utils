@@ -3,10 +3,13 @@
 
 #include "tablator/Table.hxx"
 #include "tablator/Property.hxx"
+#include "tablator/fits_keyword_mapping.hxx"
 // FIXME: Hires.hxx should be hires/Hires.hxx
 #include "Hires.hxx"
 #include "Gnomonic.hxx"
 #include "tinyhtm/Spherical.hxx"
+
+#include "Coordinate_Frame.hxx"
 
 double extract_number(const std::map<std::string, Tablator::Property>
                       &properties, const std::string &key)
@@ -21,16 +24,44 @@ double extract_number(const std::map<std::string, Tablator::Property>
 void get_sample_from_table(const boost::filesystem::path &path,
                            const std::map<std::string,std::string> &columns,
                            const bool &shape_valid,
+                           const Coordinate_Frame &coordinate_frame,
                            std::vector<hires::Sample> &samples,
+                           std::vector<std::pair<std::string,
+                                                 std::pair<std::string,
+                                                           std::string> > >
+                           &keywords,
                            tinyhtm::Spherical &center, tinyhtm::Spherical &size)
 {
   Tablator::Table table(path);
 
+  /// Get BUNIT from the signal column
+  keywords.push_back({"BUNIT",{table.fields_properties.at
+          (table.compound_type.getMemberIndex(columns.at("signal")))
+          .attributes["unit"],""}});
+  auto keyword_mapping=Tablator::fits_keyword_mapping(true);
+  for(auto &p: table.properties)
+    {
+      std::string name=p.first;
+      auto it=keyword_mapping.find(name);
+      if(it!=keyword_mapping.end())
+        name=it->second;
+      keywords.push_back({name,{p.second.value,""}});
+    }
   if(!shape_valid)
     {
-      center.lon()=extract_number(table.properties,"pos.eq.ra");
-      center.lat()=extract_number(table.properties,"pos.eq.dec");
-              
+      switch(coordinate_frame)
+        {
+        case Coordinate_Frame::ICRS:
+        case Coordinate_Frame::J2000:
+          center.lon()=extract_number(table.properties,"pos.eq.ra");
+          center.lat()=extract_number(table.properties,"pos.eq.dec");
+          break;
+        case Coordinate_Frame::Galactic:
+          center.lon()=extract_number(table.properties,"pos.galactic.lon");
+          center.lat()=extract_number(table.properties,"pos.galactic.lat");
+          break;
+        }
+      
       auto iter=table.properties.find("pos.radius");
       if(iter==table.properties.end())
         {

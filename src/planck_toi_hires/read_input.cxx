@@ -357,6 +357,27 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
                                    + v.first);
         }
     }
+  switch(coordinate_frame)
+    {
+    case Coordinate_Frame::ICRS:
+    case Coordinate_Frame::J2000:
+      keywords.push_back({"CTYPE1",{"RA---TAN",""}});
+      keywords.push_back({"CTYPE2",{"DEC--TAN",""}});
+      if(columns.find("ra")==columns.end())
+        columns.insert({"ra","ra"});
+      if(columns.find("dec")==columns.end())
+        columns.insert({"dec","dec"});
+      break;
+    case Coordinate_Frame::Galactic:
+      keywords.push_back({"CTYPE1",{"GLON-TAN",""}});
+      keywords.push_back({"CTYPE2",{"GLAT-TAN",""}});
+      if(columns.find("ra")==columns.end())
+        columns.insert({"ra","glon"});
+      if(columns.find("dec")==columns.end())
+        columns.insert({"dec","glat"});
+      break;
+    }
+
   if(output_prefix.empty())
     throw std::runtime_error("output_prefix required");
   if(input_file.empty())

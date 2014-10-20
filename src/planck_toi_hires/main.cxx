@@ -32,7 +32,11 @@ hires::Sample get_sample_from_query
 void get_sample_from_table(const boost::filesystem::path &path,
                            const std::map<std::string,std::string> &columns,
                            const bool &shape_valid,
+                           const Coordinate_Frame &coordinate_frame,
                            std::vector<hires::Sample> &samples,
+                           std::vector<std::pair<std::string, std::pair<std::string,
+                                                                        std::string> > >
+                           &keywords,
                            tinyhtm::Spherical &center, tinyhtm::Spherical &size);
 
 void read_input(json5_parser::mValue &json5, const std::string &arg,
@@ -71,8 +75,7 @@ int main (int argc, char *argv[])
     {
       std::string output_prefix, input_file;
       boost::filesystem::path drf_file("share/hires/beams");
-      std::map<std::string,std::string> columns={{"ra","ra"},{"dec","dec"},
-                                                 {"signal","tsky"},
+      std::map<std::string,std::string> columns={{"signal","tsky"},
                                                  {"psi","psi"}};
       Coordinate_Frame coordinate_frame=Coordinate_Frame::ICRS;
       double angResolution;
@@ -108,7 +111,8 @@ int main (int argc, char *argv[])
       else
         {
           get_sample_from_table(path, columns, shape.operator bool(),
-                                samples, center, size);
+                                coordinate_frame, samples, keywords, center,
+                                size);
         }
 
       std::array<int,2> nxy{{static_cast<int>(size.lon()/angResolution),
