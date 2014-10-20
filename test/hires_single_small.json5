@@ -4,7 +4,7 @@
     iterations:[1],
     output:
     {
-        prefix:"test/hires_single_small",
+        prefix:"test/hires_single_small/",
         minimap:["image"],
         hires:["image"]
     },

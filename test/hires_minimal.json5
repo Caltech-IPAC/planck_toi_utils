@@ -2,7 +2,7 @@
     input_file:"test/hires_minimal.fits",
     output:
     {
-        prefix:"test/hires_minimal",
+        prefix:"test/hires_minimal_",
         minimap:["image"]
     },
     pos:

@@ -4,7 +4,7 @@
     iterations:[1],
     output:
     {
-        prefix:"test/hires_single_large",
+        prefix:"test/hires_single_large/",
         minimap:["image","hitmap"],
         hires:["image","covariance","correction","beam"]
     },
