@@ -6,7 +6,7 @@
     {
         prefix:"test/hires_single_large/",
         minimap:["image","hitmap"],
-        hires:["image","covariance","correction","beam"]
+        hires:["image","covariance"]
     },
     pos:
     {
