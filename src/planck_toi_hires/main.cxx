@@ -120,7 +120,8 @@ int main (int argc, char *argv[])
                           boost_function_string,keywords,samples);
       hires.init ();
       hires.write_output (output_prefix);
-      const size_t iter_max=iterations.empty() ? 0 : *iterations.rbegin() + 1;
+      const size_t iter_max=(iterations.empty() || !hires.running_hires()) ? 0
+        : *iterations.rbegin() + 1;
       while (hires.iteration < iter_max)
         {
           hires.iterate (false);
