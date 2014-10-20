@@ -118,7 +118,6 @@ int main (int argc, char *argv[])
       constexpr double pi=atan(1.0)*4;
       hires::Hires hires (nxy,crval,angResolution*pi/180,output_types,drf_file,
                           boost_function_string,keywords,samples);
-      hires.init ();
       hires.write_output (output_prefix);
       const size_t iter_max=(iterations.empty() || !hires.running_hires()) ? 0
         : *iterations.rbegin() + 1;
