@@ -1,7 +1,7 @@
 {
     input_file:"test/hires_single_point.fits",
     drf_file:"share/hires/beams/DRF_030.fits",
-    iterations:[1],
+    iterations:[2],
     output:
     {
         prefix:"test/hires_single_small/",

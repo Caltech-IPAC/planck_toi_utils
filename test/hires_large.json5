@@ -1,0 +1,16 @@
+{
+    input_file:"test/hires_large.fits",
+    drf_file:"share/hires/beams/DRF_044.fits",
+    iterations:[2],
+    output:
+    {
+        prefix:"test/hires_large/",
+        minimap:["image"],
+        hires:["image"]
+    },
+    pos:
+    {
+        frame:"galactic",
+        angResolution:0.05,
+    }
+}
