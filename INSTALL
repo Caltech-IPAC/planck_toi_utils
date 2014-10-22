@@ -10,8 +10,8 @@ In addition, the Planck utilities require the following libraries:
   CCfits
     http://heasarc.gsfc.nasa.gov/fitsio/CCfits/
 
-  armadillo
-    http://arma.sourceforge.net/
+  eigen
+    http://eigen.tuxfamily.org
 
   boost
     http://www.boost.org/
@@ -20,18 +20,21 @@ In addition, the Planck utilities require the following libraries:
     http://www.hdfgroup.org/HDF5/
     This must be configured with c++ support
 
+  tablator
+    http://cerebus.ipac.caltech.edu/gitweb/?p=tablator.git
+
   libhires
     http://cerebus.ipac.caltech.edu/gitweb/?p=libhires.git
 
   libtinyhtm
     http://cerebus.ipac.caltech.edu/gitweb/?p=libtinyhtm.git
 
-CCfits depends on cfitsio, and libhires and libtinyhtm depend on the
+CCfits depends on cfitsio, and tablator, libhires and libtinyhtm depend on the
 previous libraries.
 
 
 Debian
 ------
-On Debian, cfitsio, CCfits, armadillo, and boost are available through
+On Debian, cfitsio, CCfits, eigen, and boost are available through
 apt.  The hdf5 package in Debian wheezy does not include c++ bindings,
 so you will have to build that yourself.
