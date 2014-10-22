@@ -1,0 +1,16 @@
+On IRSA systems, run these two commands to create a static executable.
+
+  $CM_ENV_DIR/core/bin/g++ build/src/planck_toi_hires/main.cxx.6.o build/src/planck_toi_hires/read_input.cxx.6.o build/src/planck_toi_hires/get_sample_from_query.cxx.6.o build/src/planck_toi_hires/get_sample_from_table.cxx.6.o -o planck_toi_hires_static ../libhires/lib/libhires.a ../tablator/lib/libtablator.a $CM_TPS_DIR/lib/libCCfits.a $CM_TPS_DIR/lib/libcfitsio.a $CM_ENV_DIR/misc/lib/libboost_filesystem.a $CM_ENV_DIR/misc/lib/libboost_system.a $CM_TPS_DIR/lib/libhdf5_cpp.a $CM_TPS_DIR/lib/libhdf5.a ../libtinyhtm/lib/libtinyhtm.a ../libtinyhtm/lib/libtinyhtmcxx.a $CM_TPS_DIR/lib/libwcs.a ../json5_parser/lib/libjson5_parser.a -lpthread -lz -static-libgcc -static-libstdc++
+  strip planck_toi_hires_static
+
+Running ldd on the result gives
+
+  $ ldd planck_toi_hires_static                                                                                                                                                                                                                        
+        linux-vdso.so.1 =>  (0x00007fff5e5fd000)
+        libpthread.so.0 => /lib64/libpthread.so.0 (0x0000003581200000)
+        libz.so.1 => /lib64/libz.so.1 (0x0000003581600000)
+        libm.so.6 => /lib64/libm.so.6 (0x0000003580e00000)
+        libc.so.6 => /lib64/libc.so.6 (0x0000003580600000)
+        /lib64/ld-linux-x86-64.so.2 (0x0000003580200000)
+
+which are all provided by the kernel.
