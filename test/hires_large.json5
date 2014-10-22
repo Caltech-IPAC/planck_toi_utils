@@ -10,7 +10,6 @@
     },
     pos:
     {
-        frame:"galactic",
         angResolution:0.05,
     }
 }
