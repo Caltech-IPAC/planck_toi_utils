@@ -1,0 +1,157 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Planck Hires",
+    "description": "An input file for the planck_toi_hires program",
+    "type": "object",
+    "properties":
+    {
+        "output":
+        {
+            "description": "Object containing parameters for output",
+            "type": "object",
+            "properties":
+            {
+                "prefix":
+                {
+                    "description": "Prefix added to all output filenames.  \
+For example, if you want to put all of the results into the directory OUT, \
+then set prefix to 'OUT'.  To output to standard output, set the prefix to '-'."
+                    "type": "string"
+                },
+                "minimap":
+                {
+                    "description": "An array of strings with the types of \
+minimap products to output.  You usually only want 'image'."
+                    "type": "array",
+                    "items":
+                    {
+                        "enum":
+                        [
+                            "image",
+                            "hitmap"
+                        ]
+                    }
+                },
+                "hires":
+                {
+                    "description": "An array of strings with the types of \
+hires products to output.  You usually only want 'image'."
+                    "type": "array",
+                    "items":
+                    {
+                        "enum":
+                        [
+                            "image",
+                            "covariance"
+                        ]
+                    }
+                }
+            }
+        },
+        "input_file":
+        {
+            "description": "The input file containing the TOI's",
+            "type": "string"
+        },
+        "drf_file":
+        {
+            "description": "A file containing the DRF's (Detector \
+Response Function)",
+            "type": "string"
+        },
+        "iterations":
+        {
+            "description": "A number or array of numbers denoting when \
+to output hires images"
+            "type": "array",
+            "items":
+            {
+                "type": "integer",
+                "minimum": 0
+            }
+        }
+        "pos":
+        {
+            "description": "An object detailing the shape of the region used when computing the images.",
+            "type": "object",
+            "properties":
+            {
+                "frame":
+                {
+                    "description": "A string denoting which cooridinate frame \
+to use for the result",
+                    "enum":
+                    [
+                        "j2000", "icrs", "galactic"
+                    ]
+                },
+                "angResolution":
+                {
+                    "description": "Size of the pixels",
+                    "type": "number",
+                    "minimum": 0
+                },
+                "shape":
+                {
+                    "description": "Shape of the region to be considered for \
+image generation",
+                    "type": "object",
+                    "properties":
+                    {
+                        "type":
+                        {
+                            "description": "Type of shape",
+                            "enum": ["circle", "box", "polygon"]
+                        },
+                        "center":
+                        {
+                            "description": "For circle and box, the \
+coordinates for the center of the shape",
+                            "type": "array",
+                            "items":
+                            {
+                                "type": "number"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                        },
+                        "r":
+                        {
+                            "description": "For circle, the radius",
+                            "type": "number"
+                        }
+                        "size":
+                        {
+                            "description": "For box, the width and height in \
+the coordinate frame give by pos.frame",
+                            "type": "array",
+                            "items":
+                            {
+                                "type": "number"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                        },
+                        "vertices":
+                        {
+                            "description": "For polygon, an array of pairs of\
+numbers constituting the vertices making up the polygon",
+                            "type": "array",
+                            "items"
+                            {
+                                "type":"array",
+                                "items":
+                                {
+                                    "type": "number"
+                                },
+                                "minItems": 2,
+                                "maxItems": 2
+                            }
+                            "minItems": 3
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

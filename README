@@ -1,0 +1,6 @@
+See INSTALL for instruction on how to build the software.
+INSTALL.STATIC is only useful if you are trying to build binaries that
+will work on other machines.
+
+See doc/README.hires for instruction on how to run the Hires/Minimap
+tool.

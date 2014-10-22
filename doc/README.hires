@@ -1,0 +1,35 @@
+planck_toi_hires reads in a data file with Planck TOI data points and
+creates images out of it.  The control fille format is JSON5, an
+easier to read and write version of JSON.  There are examples in the
+test/ directory.
+
+A simple invocation would be
+
+  ./planck_toi_hires --query="{input_file:'test/hires_minimal.fits',output:{prefix:'test/hires_minimal_',minimap:['image']},pos:{angResolution:0.01}}"
+
+or equivalently
+
+  ./planck_toi_hires test/hires_minimal.json5
+
+This reads the data from
+
+  test/hires_minimal.fits
+
+The output files will be prefixed by
+
+  test/hires_minimal_
+
+and only the minimap image will be output.  It will have the name
+
+  test/hires_minimal_minimap.fits
+
+The resolution of the image will be 0.01 degrees.
+
+Other parameters, such as where to put the center of the image, are
+taken from the input fits file.
+
+The complete list of parameters and their meaning is detailed in the
+schema
+
+  doc/planck_toi_hires_schema.json
+
