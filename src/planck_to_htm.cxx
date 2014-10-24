@@ -20,7 +20,7 @@ struct planck_tod_entry
   int64_t htmid;
   float psi;
   double mjd;
-  float tsky;
+  float signal;
   unsigned char sso;
   htm_sc sc;
 
@@ -41,7 +41,7 @@ struct planck_tod_entry
       case 1:
         return reinterpret_cast<const void *>(&mjd);
       case 2:
-        return reinterpret_cast<const void *>(&tsky);
+        return reinterpret_cast<const void *>(&signal);
       case 3:
         return reinterpret_cast<const void *>(&sso);
       }
@@ -52,7 +52,7 @@ struct planck_tod_entry
 
   bool operator<(const planck_tod_entry &p) const
   {
-    return (htmid < p.htmid || (htmid == p.htmid && tsky < p.tsky));
+    return (htmid < p.htmid || (htmid == p.htmid && signal < p.signal));
   }
 } HTM_ALIGNED (16);
 
@@ -60,13 +60,13 @@ struct planck_hdf5_entry
 {
   float glon, glat, psi;
   int32_t healpix_2048;
-  float tsky;
+  float signal;
   double utc;
   unsigned char sso;
 };
 
 std::array<std::string, planck_tod_entry::num_elements>
-planck_tod_entry::names{ { "PSI", "MJD", "TSKY", "SSO" } };
+planck_tod_entry::names{ { "PSI", "MJD", "SIGNAL", "SSO" } };
 
 std::array<H5::DataType, planck_tod_entry::num_elements>
 planck_tod_entry::types{
@@ -117,9 +117,9 @@ int main (int argc, char *argv[])
               std::map<std::string, CCfits::Column *> &columns (
                   image->column ());
 
-              CCfits::ColumnData<double> *tsky_column
+              CCfits::ColumnData<double> *signal_column
                   = dynamic_cast<CCfits::ColumnData<double> *>(
-                      columns["TSKY"]);
+                      columns["SIGNAL"]);
               CCfits::ColumnData<double> *glon_column
                   = dynamic_cast<CCfits::ColumnData<double> *>(
                       columns["GLON"]);
@@ -132,8 +132,8 @@ int main (int argc, char *argv[])
               CCfits::ColumnData<short> *ring_column
                   = dynamic_cast<CCfits::ColumnData<short> *>(columns["RING"]);
 
-              if (tsky_column == nullptr)
-                throw std::runtime_error ("Can not open TSKY column");
+              if (signal_column == nullptr)
+                throw std::runtime_error ("Can not open SIGNAL column");
               if (glon_column == nullptr)
                 throw std::runtime_error ("Can not open GLON column");
               if (glat_column == nullptr)
@@ -144,14 +144,14 @@ int main (int argc, char *argv[])
                 throw std::runtime_error ("Can not open RING column");
 
               std::vector<std::string> keys;
-              keys.push_back ("TSKY");
+              keys.push_back ("SIGNAL");
               keys.push_back ("GLON");
               keys.push_back ("GLAT");
               keys.push_back ("UTC");
               keys.push_back ("RING");
               image->readData (true, keys);
 
-              const size_t num_points_in_file (tsky_column->data ().size ());
+              const size_t num_points_in_file (signal_column->data ().size ());
               npoints += num_points_in_file;
               for (size_t i = 0; i < num_points_in_file; ++i)
                 {
@@ -238,7 +238,7 @@ int main (int argc, char *argv[])
               compound.insertMember("healpix_2048",
                                     HOFFSET(planck_hdf5_entry,healpix_2048),
                                     H5::PredType::NATIVE_INT32);
-              compound.insertMember("tsky",HOFFSET(planck_hdf5_entry,tsky),
+              compound.insertMember("signal",HOFFSET(planck_hdf5_entry,signal),
                                     H5::PredType::NATIVE_FLOAT);
               compound.insertMember("utc",HOFFSET(planck_hdf5_entry,utc),
                                     H5::PredType::NATIVE_DOUBLE);
@@ -264,7 +264,7 @@ int main (int argc, char *argv[])
                   entry.psi = hdf_entry.psi;
                   const double MJD_1958_01_01=36204.0;
                   entry.mjd = MJD_1958_01_01 + hdf_entry.utc / 86400.0;
-                  entry.tsky = hdf_entry.tsky;
+                  entry.signal = hdf_entry.signal;
                   entry.sso = hdf_entry.sso;
 
                   double ra=hdf_entry.glon;
