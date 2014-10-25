@@ -22,8 +22,10 @@ tinyhtm::Spherical extract_position(const json5_parser::mValue &value)
   if(pos.size()!=2)
     throw std::runtime_error("Wrong number of elements in an array.  Expected "
                              "2 but got " + std::to_string(pos.size()));
-  if(pos[0].type()!=json5_parser::real_type
-     || pos[1].type()!=json5_parser::real_type)
+  if((pos[0].type()!=json5_parser::real_type
+      && pos[0].type()!=json5_parser::int_type)
+     || (pos[1].type()!=json5_parser::real_type
+         && pos[1].type()!=json5_parser::int_type))
     throw std::runtime_error("Expected a number in an array");
   return tinyhtm::Spherical(pos[0].get_real(),pos[1].get_real());
 }
@@ -287,7 +289,8 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
                 }
               else if(element.first=="angResolution")
                 {
-                  if(element.second.type()!=json5_parser::real_type)
+                  if(element.second.type()!=json5_parser::real_type
+                     && element.second.type()!=json5_parser::int_type)
                     throw std::runtime_error("Expected a number for "
                                              "'pos.angResolution'");
 
