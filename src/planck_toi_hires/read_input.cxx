@@ -122,13 +122,9 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
                       if(m.get_str()=="image")
                         output_types.insert(hires::Hires::Image_Type
                                             ::hires_image);
-                      else if(m.get_str()=="covariance")
-                        output_types.insert(hires::Hires::Image_Type
-                                            ::hires_covariance);
                       else
                         throw std::runtime_error
-                          ("Expected either 'image', 'covariance', "
-                           "'correction', or 'beam' in 'output.hires'");
+                          ("Expected 'image' in 'output.hires'");
                     }
                 }
             }

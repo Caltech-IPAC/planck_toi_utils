@@ -42,7 +42,6 @@ hires products to output.  You usually only want 'image'."
                         "enum":
                         [
                             "image",
-                            "covariance"
                         ]
                     }
                 }
