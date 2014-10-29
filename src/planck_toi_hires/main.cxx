@@ -121,13 +121,14 @@ int main (int argc, char *argv[])
 
       constexpr double pi=atan(1.0)*4;
       hires::Hires hires (nxy,crval,angResolution*pi/180,output_types,drf_file,
-                          boost_function_string,keywords,samples);
+                          keywords,samples);
       hires.write_output (output_prefix);
+
       const size_t iter_max=(iterations.empty() || !hires.running_hires()) ? 0
         : *iterations.rbegin() + 1;
       while (hires.iteration < iter_max)
         {
-          hires.iterate (false);
+          hires.iterate ();
           if (iterations.find (hires.iteration) != iterations.end ())
             hires.write_output (output_prefix);
         }
