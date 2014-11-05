@@ -23,9 +23,9 @@ bool Results::callback (void *void_entry, int num_elements,
             {
               mjd_index = i;
             }
-          else if (names[i] == std::string ("TSKY"))
+          else if (names[i] == std::string ("SIGNAL"))
             {
-              tsky_index = i;
+              signal_index = i;
             }
           else if (names[i] == std::string ("SSO"))
             {
@@ -61,8 +61,8 @@ bool Results::callback (void *void_entry, int num_elements,
         throw std::runtime_error ("Missing column 'MJD' in HTM file");
       if (psi_index == static_cast<size_t>(-1))
         throw std::runtime_error ("Missing column 'PSI' in HTM file");
-      if (tsky_index == static_cast<size_t>(-1))
-        throw std::runtime_error ("Missing column 'TSKY' in HTM file");
+      if (signal_index == static_cast<size_t>(-1))
+        throw std::runtime_error ("Missing column 'SIGNAL' in HTM file");
       if (sso_index == static_cast<size_t>(-1))
         throw std::runtime_error ("Missing column 'SSO' in HTM file");
     }
@@ -84,9 +84,9 @@ bool Results::callback (void *void_entry, int num_elements,
           y (*(float *)(entry + offsets[y_index])),
           z (*(float *)(entry + offsets[z_index])),
           psi (*(float *)(entry + offsets[psi_index])),
-          tsky (*(float *)(entry + offsets[tsky_index])),
+          signal (*(float *)(entry + offsets[signal_index])),
           sso (*(char *)(entry + offsets[sso_index]));
-      data.push_back (std::make_tuple (x, y, z, psi, mjd, tsky, sso));
+      data.push_back (std::make_tuple (x, y, z, psi, mjd, signal, sso));
     }
   return in_interval;
 }
@@ -125,7 +125,7 @@ void Results::write_fits (char *fname)
   colName[1] = "RA";
   colName[2] = "DEC";
   colName[3] = "PSI";
-  colName[4] = "TSKY";
+  colName[4] = "SIGNAL";
   colName[5] = "SSO";
 
   colForm[0] = "1D";
@@ -195,7 +195,7 @@ void Results::write_fits (char *fname)
           newTable->column ("RA").write (ra, i, start_row);
           newTable->column ("DEC").write (dec, i, start_row);
           newTable->column ("PSI").write (psi, i, start_row);
-          newTable->column ("TSKY").write (signal, i, start_row);
+          newTable->column ("SIGNAL").write (signal, i, start_row);
           newTable->column ("SSO").write (sso, i, start_row);
           i = 0;
           nbuf++;

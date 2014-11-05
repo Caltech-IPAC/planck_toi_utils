@@ -34,7 +34,7 @@ void read_indexed_hdf5 (const std::string &filename,
                          H5::PredType::NATIVE_FLOAT);
   compound.insertMember ("mjd", HOFFSET (indexed_entry, mjd),
                          H5::PredType::NATIVE_DOUBLE);
-  compound.insertMember ("tsky", HOFFSET (indexed_entry, tsky),
+  compound.insertMember ("signal", HOFFSET (indexed_entry, signal),
                          H5::PredType::NATIVE_FLOAT);
   compound.insertMember ("glon", HOFFSET (indexed_entry, glon),
                          H5::PredType::NATIVE_DOUBLE);

@@ -5,7 +5,7 @@ struct indexed_entry
   double ra, dec;
   float psi;
   double mjd;
-  float tsky;
+  float signal;
   double glon, glat;
   unsigned char sso;
 

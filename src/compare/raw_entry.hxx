@@ -4,7 +4,7 @@ struct raw_entry
 {
   float glon, glat, psi;
   int32_t healpix_2048;
-  float tsky;
+  float signal;
   double utc;
   unsigned char sso;
 

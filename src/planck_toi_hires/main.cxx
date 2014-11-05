@@ -75,7 +75,7 @@ int main (int argc, char *argv[])
     {
       std::string output_prefix, input_file;
       boost::filesystem::path drf_file("share/hires/beams");
-      std::map<std::string,std::string> columns={{"signal","tsky"},
+      std::map<std::string,std::string> columns={{"signal","signal"},
                                                  {"psi","psi"}};
       Coordinate_Frame coordinate_frame=Coordinate_Frame::ICRS;
       double angResolution;

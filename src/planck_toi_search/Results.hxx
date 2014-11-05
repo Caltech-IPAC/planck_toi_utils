@@ -18,7 +18,7 @@ public:
   std::vector<std::tuple<float, float, float, float, double, float, char> >
   data;
   std::list<std::pair<double, double> > &time_intervals;
-  size_t x_index, y_index, z_index, psi_index, mjd_index, tsky_index,
+  size_t x_index, y_index, z_index, psi_index, mjd_index, signal_index,
       sso_index;
   bool valid, count;
 
@@ -28,7 +28,7 @@ public:
 
   Results (std::list<std::pair<double, double> > &t)
       : time_intervals (t), x_index (-1), y_index (-1), z_index (-1),
-        psi_index (-1), mjd_index (-1), tsky_index (-1), sso_index (-1),
+        psi_index (-1), mjd_index (-1), signal_index (-1), sso_index (-1),
         valid (true), count (false)
   {
   }
@@ -48,7 +48,7 @@ inline std::ostream &operator<<(std::ostream &os, const Results &results)
      << "\t"
      << "MJD"
      << "\t"
-     << "TSKY"
+     << "SIGNAL"
      << "\t"
      << "SSO\n";
   int sso;

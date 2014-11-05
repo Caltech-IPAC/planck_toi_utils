@@ -41,7 +41,7 @@ int callback (void *void_entry, int num_elements,
         {
           z = *((float *)p);
         }
-      else if (names[i]=="TSKY")
+      else if (names[i]=="SIGNAL")
         {
           flux_entry = *((float *)p);
         }

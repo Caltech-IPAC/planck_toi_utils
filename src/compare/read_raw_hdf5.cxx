@@ -34,7 +34,7 @@ void read_raw_hdf5 (const std::string &filename,
                          H5::PredType::NATIVE_FLOAT);
   compound.insertMember ("healpix_2048", HOFFSET (raw_entry, healpix_2048),
                          H5::PredType::NATIVE_INT32);
-  compound.insertMember ("tsky", HOFFSET (raw_entry, tsky),
+  compound.insertMember ("signal", HOFFSET (raw_entry, signal),
                          H5::PredType::NATIVE_FLOAT);
   compound.insertMember ("utc", HOFFSET (raw_entry, utc),
                          H5::PredType::NATIVE_DOUBLE);
