@@ -72,11 +72,11 @@ def configure(conf):
 def options(opt):
     wcs=opt.add_option_group('WCS Options')
     wcs.add_option('--wcs-dir',
-                   help='Base directory where wcs is installed')
+                   help='Base directory where wcstools is installed')
     wcs.add_option('--wcs-incdir',
-                   help='Directory where wcs include files are installed')
+                   help='Directory where wcstools include files are installed')
     wcs.add_option('--wcs-libdir',
-                   help='Directory where wcs library files are installed')
+                   help='Directory where wcstools library files are installed')
     wcs.add_option('--wcs-libs',
-                   help='Names of the wcs libraries without prefix or suffix\n'
+                   help='Names of the wcstools libraries without prefix or suffix\n'
                    '(e.g. "wcs")')
