@@ -1,13 +1,44 @@
-Planck utilities are implemented in C++ 11.  This means a recent
-version of gcc (4.7 or later).  Recent versions of clang may also
-work, but has not been tested.
+* Quick Start
 
-In addition, the Planck utilities require the following libraries:
+  If you have all of the dependencies, then you should be able to run
+
+    python waf configure
+    python waf  
+
+  This will build the executable
+
+    build/planck_toi_hires
+
+* Dependencies
+
+  The Planck utilities are implemented in C++11.  This means you need a
+  recent version of gcc (4.7 or later).  Recent versions of clang may
+  also work, but have not been tested.  You will also need Python.
+
+** IRSA libraries
+   If you downloaded this code via a tarball, it should all of the
+   necessary IRSA libraries in the directory src/third_party_builtin/.
+   Otherwise, the following IRSA libraries are required:
+
+  tablator
+    https://github.com/Caltech-IPAC/tablator
+
+  libhires
+    https://github.com/Caltech-IPAC/libhires
+
+  libtinyhtm
+    https://github.com/Caltech-IPAC/libtinyhtm
+
+  json5_parser
+    https://github.com/Caltech-IPAC/json5_parser
+
+** External Dependencies
 
   cfitsio
     http://heasarc.nasa.gov/fitsio/fitsio.html
 
   CCfits
+    CCfits depends on cfitsio
     http://heasarc.gsfc.nasa.gov/fitsio/CCfits/
 
   eigen
@@ -20,21 +51,30 @@ In addition, the Planck utilities require the following libraries:
     http://www.hdfgroup.org/HDF5/
     This must be configured with c++ support
 
-  tablator
-    http://cerebus.ipac.caltech.edu/gitweb/?p=tablator.git
-
-  libhires
-    http://cerebus.ipac.caltech.edu/gitweb/?p=libhires.git
-
-  libtinyhtm
-    http://cerebus.ipac.caltech.edu/gitweb/?p=libtinyhtm.git
-
-CCfits depends on cfitsio, and tablator, libhires and libtinyhtm depend on the
-previous libraries.
+  wcstools
+    http://tdc-www.harvard.edu/software/wcstools/
 
 
-Debian
-------
-On Debian, cfitsio, CCfits, eigen, and boost are available through
-apt.  The hdf5 package in Debian wheezy does not include c++ bindings,
-so you will have to build that yourself.
+*** Debian and Ubuntu
+
+   Debian 8 (Jessie) and Ubuntu (14.04 Trusty Tahr and later) include
+   packages for cfitsio, CCfits, eigen, boost, wcstools, and hdf5.  You can get
+   the development libraries with the command:
+
+     apt-get install g++ libcfitsio-dev libccfits-dev libeigen3-dev libboost-dev libhdf5-dev libwcstools-dev
+
+*** Red Hat Enterprise
+
+   Only Red Hat Enterprise 7 has a recent enough compiler to build the
+   Planck utilities.  You can get the boost development libraries with
+   the command:
+
+     yum install gcc-c++ boost-devel
+
+   EPEL (Extra Packages for Enterprise Linux) has packages for cfitsio, eigen, and hdf5.
+
+     http://dl.fedoraproject.org/pub/epel/7/x86_64/repoview/cfitsio-devel.html
+     http://dl.fedoraproject.org/pub/epel/7/x86_64/repoview/eigen3-devel.html
+     http://dl.fedoraproject.org/pub/epel/7/x86_64/repoview/hdf5-devel.html
+
+   You will have to build CCfits and wcstools manually.
