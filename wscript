@@ -78,7 +78,7 @@ def build(ctx):
         name='planck_toi_search',
         includes=['..'],
         install_path=os.path.join(ctx.env.PREFIX, 'bin'),
-        use=['cfitsio','CCfits','hdf5','hdf5_cxx','tinyhtm','tinyhtm_cxx','wcs']
+        use=['cfitsio','CCfits','hdf5','hdf5_cxx','tinyhtm','tinyhtm_cxx']
     )
 
     ctx.program(
@@ -91,5 +91,5 @@ def build(ctx):
         name='planck_toi_hires',
         install_path=os.path.join(ctx.env.PREFIX, 'bin'),
         use=['cfitsio','CCfits','boost','hdf5','hdf5_cxx','eigen',
-             'tinyhtm','tinyhtm_cxx','hires', 'wcs', 'json5_parser', 'tablator']
+             'tinyhtm','tinyhtm_cxx','hires', 'json5_parser', 'tablator']
     )
