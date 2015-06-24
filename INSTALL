@@ -93,8 +93,8 @@
      ./configure --prefix=$PWD --with-cfitsio-include=/usr/include/cfitsio --with-cfitsio-libdir=/usr/lib64
      make
      make install
-     export CPPFLAGS=-I$PWD
-     export LDFLAGS=-L$PWD
-     export LD_LIBRARY_PATH=$PWD
+     export CPPFLAGS=-I$PWD/include
+     export LDFLAGS=-L$PWD/lib
+     export LD_LIBRARY_PATH=$PWD/lib
 
   Then you will be able to run the 'build.sh' script.
