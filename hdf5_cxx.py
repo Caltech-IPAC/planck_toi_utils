@@ -53,18 +53,20 @@ def configure(conf):
         + "{return H5Fopen(\"foo.h5\",H5F_ACC_RDONLY, H5P_DEFAULT);}\n"
     
     found_hdf5_c=False
-    for config in hdf5_config:
+    for c in hdf5_config:
+        print "hdf5_config:" + str(c)
         try:
-            conf.check_cxx(msg="Checking for HDF5 C bindings using:\n\t" + str(config),
+            conf.check_cxx(msg="Checking for HDF5 C bindings using: " + str(c),
                            fragment=frag,
-                           includes=config[0], uselib_store='hdf5',
-                           libpath=config[1],
-                           rpath=config[1],
-                           lib=config[2])
+                           includes=c[0], uselib_store='hdf5',
+                           libpath=c[1],
+                           rpath=c[1],
+                           lib=c[2])
         except conf.errors.ConfigurationError:
             continue
         else:
             found_hdf5_c=True
+            break
     if not found_hdf5_c:
         conf.fatal("Could not find HDF5 C libraries")
             
@@ -73,17 +75,17 @@ def configure(conf):
         + "{H5::Exception::dontPrint();}\n"
 
     found_hdf5_cxx=False
-    for config in hdf5_config:
+    for c in hdf5_config:
         try:
-            conf.check_cxx(msg="Checking for HDF5 C++ bindings using:\n\t" + str(config),
+            conf.check_cxx(msg="Checking for HDF5 C++ bindings using: " + str(c),
                            fragment=frag,
-                           includes=config[0], uselib_store='hdf5_cxx',
-                           libpath=config[1],
-                           rpath=config[1],
-                           lib=config[2] + config[3])
+                           includes=c[0], uselib_store='hdf5_cxx',
+                           libpath=c[1],
+                           rpath=c[1],
+                           lib=c[2] + c[3])
         except conf.errors.ConfigurationError:
             continue
         else:
-            found_hdf5_cxx=True
-    if not found_hdf5_cxx:
+            found_hdf5_c=True
+    if not found_hdf5_c:
         conf.fatal("Could not find HDF5 C++ libraries")
