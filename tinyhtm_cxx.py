@@ -5,7 +5,7 @@ def configure(conf):
     def get_param(varname,default):
         return getattr(Options.options,varname,'')or default
 
-    conf.load('hdf5_cxx');
+    conf.load('hdf5_cxx cxx11');
     # Find TINYHTM C
     if conf.options.tinyhtm_dir:
         if not conf.options.tinyhtm_incdir:
@@ -30,7 +30,7 @@ def configure(conf):
                    libpath=[conf.options.tinyhtm_libdir],
                    rpath=[conf.options.tinyhtm_libdir],
                    lib=tinyhtm_c_libs,
-                   use=['hdf5'])
+                   use=['hdf5', 'cxx11'])
 
     # Find TINYHTM C++
     if conf.options.tinyhtm_dir:
@@ -56,7 +56,7 @@ def configure(conf):
                    libpath=[conf.options.tinyhtm_libdir],
                    rpath=[conf.options.tinyhtm_libdir],
                    lib=tinyhtm_cxx_libs+tinyhtm_c_libs,
-                   use=['hdf5','hdf5_cxx'])
+                   use=['hdf5','hdf5_cxx','cxx11'])
 
 def options(opt):
     opt.load('hdf5_cxx');

@@ -5,7 +5,7 @@ def configure(conf):
     def get_param(varname,default):
         return getattr(Options.options,varname,'')or default
 
-    conf.load('boost')
+    conf.load('boost cxx11')
     # Find Tablator
     if conf.options.tablator_dir:
         if not conf.options.tablator_incdir:
@@ -33,7 +33,7 @@ def configure(conf):
                   libpath=tablator_libdir,
                   rpath=tablator_libdir,
                   lib=tablator_libs,
-                  use=['boost'])
+                  use=['BOOST','cxx11'])
 
 def options(opt):
     tablator=opt.add_option_group('tablator Options')

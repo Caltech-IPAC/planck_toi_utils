@@ -25,40 +25,44 @@ def configure(conf):
         if not conf.options.wcs_libdir:
             conf.options.wcs_libdir=conf.options.wcs_dir + "/lib"
 
-    if conf.options.wcs_incdir:
-        wcs_incdir.append(conf.options.wcs_incdir)
-    if conf.options.wcs_libdir:
-        wcs_libdir.append(conf.options.wcs_libdir)
-
-    if conf.options.wcs_libs:
-        wcs_libs=conf.options.wcs_libs.split()
+    if not conf.options.wcs_incdir and not conf.options.wcs_libdir \
+       and not conf.options.wcs_libs:
+        wcs_config=[[[],[],['wcs']],[[],[],['wcstools']],
+                    [['/usr/include/wcstools'],['/usr/lib/x86_64-linux-gnu/'],
+                     ['wcstools']]]
     else:
-        wcs_libs=['wcs','wcstools']
-
+        if conf.options.wcs_incdir:
+            wcs_incdir.append(conf.options.wcs_incdir)
+        if conf.options.wcs_libdir:
+            wcs_libdir.append(conf.options.wcs_libdir)
+        
+        if conf.options.wcs_libs:
+            wcs_libs=[conf.options.wcs_libs.split()]
+        else:
+            wcs_libs=[['wcs'],['wcstools']]
+        
+        wcs_config=[]
+        for l in wcs_libs:
+            wcs_config.append([wcs_incdir,wcs_libdir,l])
+    
     wcs_fragment='extern "C" {\n' + \
         '#include "wcs.h"\n' + \
         '}\n' + \
         'int main()\n{\n ' + \
-        'wcscon(WCS_J2000,WCS_GALACTIC,0,0,nullptr,nullptr,1950);\n' + '}\n'
+        'wcscon(WCS_J2000,WCS_GALACTIC,0,0,0,0,1950);\n' + '}\n'
 
     import copy
     found_wcs=False
-    for wcs_lib in wcs_libs:
-        msg="Checking for WCS library"
-        if wcs_lib:
-            test_libs=[wcs_lib]
-            msg+=" with " + wcs_lib
-        else:
-            test_libs=copy.copy(wcs_libs)
+    for config in wcs_config:
         try:
             conf.check_cc(features="cxx cxxprogram",
-                          msg=msg,
+                          msg="Checking for WCS library using:\n\t" + str(config),
                           fragment=wcs_fragment,
-                          includes=wcs_incdir,
+                          includes=config[0],
                           uselib_store='wcs',
-                          libpath=wcs_libdir,
-                          rpath=wcs_libdir,
-                          lib=test_libs,
+                          libpath=config[1],
+                          rpath=config[1],
+                          lib=config[2],
                           execute=False)
         except conf.errors.ConfigurationError:
             continue
@@ -70,7 +74,7 @@ def configure(conf):
 
 
 def options(opt):
-    wcs=opt.add_option_group('WCS Options')
+    wcs=opt.add_option_group('WCSTOOLS Options')
     wcs.add_option('--wcs-dir',
                    help='Base directory where wcstools is installed')
     wcs.add_option('--wcs-incdir',

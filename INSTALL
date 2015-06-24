@@ -16,9 +16,11 @@
   also work, but have not been tested.  You will also need Python.
 
 ** IRSA libraries
-   If you downloaded this code via a tarball, it should all of the
-   necessary IRSA libraries in the directory src/third_party_builtin/.
-   Otherwise, the following IRSA libraries are required:
+
+   If you downloaded this code via a tarball, it should include all of
+   the necessary IRSA libraries in the directory
+   src/third_party_builtin/.  Otherwise, the following IRSA libraries
+   are required:
 
   tablator
     https://github.com/Caltech-IPAC/tablator
@@ -51,30 +53,36 @@
     http://www.hdfgroup.org/HDF5/
     This must be configured with c++ support
 
+*** Optional
+
   wcstools
     http://tdc-www.harvard.edu/software/wcstools/
-
+    This is only needed for creating Planck index files.
 
 *** Debian and Ubuntu
 
    Debian 8 (Jessie) and Ubuntu (14.04 Trusty Tahr and later) include
-   packages for cfitsio, CCfits, eigen, boost, wcstools, and hdf5.  You can get
-   the development libraries with the command:
+   packages for cfitsio, CCfits, eigen, boost, wcstools, and hdf5.
+   You can get the development libraries with the command:
 
      apt-get install g++ libcfitsio-dev libccfits-dev libeigen3-dev libboost-dev libhdf5-dev libwcstools-dev
 
-*** Red Hat Enterprise
+*** Centos 7
 
-   Only Red Hat Enterprise 7 has a recent enough compiler to build the
+   Only Centos 7 has a recent enough compiler to build the
    Planck utilities.  You can get the boost development libraries with
-   the command:
+   the commands:
 
-     yum install gcc-c++ boost-devel
+     yum group install "Development Tools" 
+     yum install boost-devel
 
-   EPEL (Extra Packages for Enterprise Linux) has packages for cfitsio, eigen, and hdf5.
+   EPEL (Extra Packages for Enterprise Linux) has packages for
+   cfitsio, eigen, and hdf5.  To get these packages, first enable EPEL
 
-     http://dl.fedoraproject.org/pub/epel/7/x86_64/repoview/cfitsio-devel.html
-     http://dl.fedoraproject.org/pub/epel/7/x86_64/repoview/eigen3-devel.html
-     http://dl.fedoraproject.org/pub/epel/7/x86_64/repoview/hdf5-devel.html
+     yum install epel-release
 
-   You will have to build CCfits and wcstools manually.
+   then install the packages
+
+     yum install cfitsio-devel eigen3-devel hdf5-devel
+
+   You will have to build CCfits manually.

@@ -5,6 +5,8 @@ def configure(conf):
     def get_param(varname,default):
         return getattr(Options.options,varname,'')or default
 
+    conf.load('boost')
+    conf.check_boost(lib='filesystem system')
     # Find Hires
     if conf.options.hires_dir:
         if not conf.options.hires_incdir:
@@ -27,11 +29,13 @@ def configure(conf):
         hires_libs=["hires"]
 
     conf.check_cxx(msg="Checking for Hires",
-                  fragment=frag,
-                  includes=hires_inc, uselib_store='hires',
-                  libpath=hires_libdir,
-                  rpath=hires_libdir,
-                  lib=hires_libs)
+                   fragment=frag,
+                   includes=hires_inc, uselib_store='hires',
+                   libpath=hires_libdir,
+                   rpath=hires_libdir,
+                   lib=hires_libs,
+                   use=['BOOST']
+    )
 
 def options(opt):
     hires=opt.add_option_group('hires Options')
