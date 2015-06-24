@@ -86,3 +86,15 @@
      yum install cfitsio-devel eigen3-devel hdf5-devel
 
    You will have to build CCfits manually.
+
+     curl -O http://heasarc.gsfc.nasa.gov/fitsio/CCfits/CCfits-2.4.tar.gz
+     tar -zxf CCfits-2.4.tar.gz
+     cd CCfits
+     ./configure --prefix=$PWD --with-cfitsio-include=/usr/include/cfitsio --with-cfitsio-libdir=/usr/lib64
+     make
+     make install
+     export CPPFLAGS=-I$PWD
+     export LDFLAGS=-L$PWD
+     export LD_LIBRARY_PATH=$PWD
+
+  Then you will be able to run the 'build.sh' script.
