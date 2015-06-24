@@ -1,6 +1,6 @@
 On IRSA systems, run these two commands to create a static executable.
 
-  $CM_ENV_DIR/core/bin/g++ build/src/planck_toi_hires/main.cxx.6.o build/src/planck_toi_hires/read_input.cxx.6.o build/src/planck_toi_hires/get_sample_from_query.cxx.6.o build/src/planck_toi_hires/get_sample_from_table.cxx.6.o -o planck_toi_hires_static ../libhires/lib/libhires.a ../tablator/lib/libtablator.a $CM_TPS_DIR/lib/libCCfits.a $CM_TPS_DIR/lib/libcfitsio.a $CM_ENV_DIR/misc/lib/libboost_filesystem.a $CM_ENV_DIR/misc/lib/libboost_system.a $CM_TPS_DIR/lib/libhdf5_cpp.a $CM_TPS_DIR/lib/libhdf5.a ../libtinyhtm/lib/libtinyhtm.a ../libtinyhtm/lib/libtinyhtmcxx.a $CM_TPS_DIR/lib/libwcs.a ../json5_parser/lib/libjson5_parser.a -lpthread -lz -static-libgcc -static-libstdc++
+  $CM_ENV_DIR/core/bin/g++ build/src/planck_toi_hires/main.cxx.6.o build/src/planck_toi_hires/read_input.cxx.6.o build/src/planck_toi_hires/get_sample_from_query.cxx.6.o build/src/planck_toi_hires/get_sample_from_table.cxx.6.o -o planck_toi_hires_static ../libhires/lib/libhires.a ../tablator/lib/libtablator.a $CM_TPS_DIR/lib/libCCfits.a $CM_TPS_DIR/lib/libcfitsio.a $CM_ENV_DIR/misc/lib/libboost_filesystem.a $CM_ENV_DIR/misc/lib/libboost_system.a $CM_ENV_DIR/misc/lib/libboost_regex.a $CM_TPS_DIR/lib/libhdf5_cpp.a $CM_TPS_DIR/lib/libhdf5.a ../libtinyhtm/lib/libtinyhtm.a ../libtinyhtm/lib/libtinyhtmcxx.a $CM_TPS_DIR/lib/libwcs.a ../json5_parser/lib/libjson5_parser.a -lpthread -lz -static-libgcc -static-libstdc++
   strip planck_toi_hires_static
 
 Running ldd on the result gives
