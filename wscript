@@ -22,9 +22,14 @@ def configure(ctx):
     ctx.env.append_value('CXXFLAGS', '-Wall')
     ctx.env.append_value('CXXFLAGS', '-Wextra')
     ctx.env.append_value('CXXFLAGS', '-D__STDC_CONSTANT_MACROS')
-    ctx.load('compiler_cxx cxx11 cfitsio CCfits boost eigen wcs tinyhtm_cxx hires json5_parser tablator')
+    ctx.load('compiler_cxx cxx11 cfitsio CCfits boost eigen tinyhtm_cxx hires json5_parser tablator')
     ctx.check_boost(lib='filesystem system regex')
-        
+
+    try:
+        ctx.load('wcs')
+    except ctx.errors.ConfigurationError:
+        ctx.msg('wcstools not found','planck_to_htm will not be built')
+    
     if ctx.options.debug:
         ctx.env.append_value('CXXFLAGS', '-g')
     else:
