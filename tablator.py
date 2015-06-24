@@ -5,7 +5,7 @@ def configure(conf):
     def get_param(varname,default):
         return getattr(Options.options,varname,'')or default
 
-    conf.load('boost cxx11')
+    conf.load('boost cxx11 cfitsio CCfits hdf5_cxx')
     # Find Tablator
     if conf.options.tablator_dir:
         if not conf.options.tablator_incdir:
@@ -33,7 +33,7 @@ def configure(conf):
                   libpath=tablator_libdir,
                   rpath=tablator_libdir,
                   lib=tablator_libs,
-                  use=['BOOST','cxx11'])
+                  use=['BOOST','cxx11','cfitsio','CCfits','hdf5_cxx'])
 
 def options(opt):
     tablator=opt.add_option_group('tablator Options')
@@ -47,3 +47,4 @@ def options(opt):
                    help='Names of the tablator libraries without prefix or suffix\n'
                    '(e.g. "tablator"')
 
+    opt.load('boost cxx11 cfitsio CCfits hdf5_cxx')

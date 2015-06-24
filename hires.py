@@ -5,7 +5,7 @@ def configure(conf):
     def get_param(varname,default):
         return getattr(Options.options,varname,'')or default
 
-    conf.load('boost')
+    conf.load('boost cfitsio CCfits')
     conf.check_boost(lib='filesystem system')
     # Find Hires
     if conf.options.hires_dir:
@@ -34,7 +34,7 @@ def configure(conf):
                    libpath=hires_libdir,
                    rpath=hires_libdir,
                    lib=hires_libs,
-                   use=['BOOST']
+                   use=['BOOST','cfitsio','CCfits']
     )
 
 def options(opt):
@@ -49,3 +49,4 @@ def options(opt):
                    help='Names of the hires libraries without prefix or suffix\n'
                    '(e.g. "hires"')
 
+    opt.load('boost cfitsio CCfits')
