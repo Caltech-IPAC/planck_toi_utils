@@ -371,8 +371,6 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
       break;
     }
 
-  if(output_prefix.empty())
-    throw std::runtime_error("output_prefix required");
   if(input_file.empty())
     throw std::runtime_error("input_file required");
   if(running_hires && iterations.empty())
