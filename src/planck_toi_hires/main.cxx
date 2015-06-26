@@ -119,7 +119,7 @@ int main (int argc, char *argv[])
             static_cast<int>(size.lat()/angResolution)}};
       std::array<double,2> crval{{center.lon(),center.lat()}};
 
-      constexpr double pi=atan(1.0)*4;
+      constexpr double pi=boost::math::constants::pi<double>();
       hires::Hires hires (nxy,crval,angResolution*pi/180,output_types,drf_file,
                           keywords,samples);
       hires.write_output (output_prefix);
