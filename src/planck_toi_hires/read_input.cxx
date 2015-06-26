@@ -253,7 +253,7 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
                       throw std::runtime_error("Unknown value for "
                                                "pos.shape.type: "
                                                + type
-                                               + "\nExpected cirlce, box, "
+                                               + "\nExpected circle, box, "
                                                "or polygon");
                     }
                 }
