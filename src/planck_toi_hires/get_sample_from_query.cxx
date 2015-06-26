@@ -11,6 +11,10 @@
 #include "Gnomonic.hxx"
 #include "Sample.hxx"
 
+// FIXME: The mapping from offset to x,y,z,flux should be done
+// beforehand and not in the callback.  We should also pass sample,
+// lon, lat, etc. in through the callback rather than using globals.
+
 hires::Sample sample;
 std::vector<double> lon, lat, flux;
 hires::Gnomonic projection (0, 0);
@@ -21,7 +25,10 @@ int callback (void *void_entry, int num_elements,
 
 {
   char *entry = static_cast<char *>(void_entry);
-  double x, y, z, flux_entry;
+  double x(std::numeric_limits<double>::quiet_NaN()),
+    y(std::numeric_limits<double>::quiet_NaN()),
+    z(std::numeric_limits<double>::quiet_NaN()),
+    flux_entry(std::numeric_limits<double>::quiet_NaN());
   const int offsets[] = { 0, 4, 8, 12, 16, 24, 28 };
   void *p;
 
