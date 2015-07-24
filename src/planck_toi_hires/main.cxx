@@ -131,9 +131,9 @@ int main (int argc, char *argv[])
           hires.write_elastic_net (output_prefix);
         }
     }
-  catch (CCfits::FitsError &e)
+  catch (CCfits::FitsException &e)
     {
-      std::cerr << "ERROR: " << e.message() << "\n";
+      std::cerr << e.message() << "\n";
     }
   catch (std::runtime_error &e)
     {
