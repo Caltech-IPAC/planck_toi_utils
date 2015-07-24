@@ -4,6 +4,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/math/constants/constants.hpp>
 
 #include "tinyhtm/Spherical.hxx"
 #include "tinyhtm/Shape.hxx"
@@ -32,12 +33,10 @@ tinyhtm::Spherical extract_position(const json5_parser::mValue &value)
 
 void read_input(json5_parser::mValue &json5, const std::string &arg,
                 std::string &output_prefix, std::string &input_file,
-                boost::filesystem::path &drf_file,
-                std::set<hires::Hires::Image_Type> &output_types,
+                bool &compute_minimap, bool &compute_hires,
+                bool &compute_elastic_net, double &sigma_drf, int &hires_iterations,
                 std::map<std::string,std::string> &columns,
                 Coordinate_Frame &coordinate_frame,
-                std::set<int> &iterations,
-                std::string &boost_function_string,
                 std::unique_ptr<tinyhtm::Shape> &shape,
                 std::vector<std::pair<std::string, std::pair<std::string,
                                                              std::string> > >
@@ -71,7 +70,6 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
     throw std::runtime_error("Invalid json5 type.  It must be an object.");
 
   angResolution=0;
-  bool running_hires(false);
   for(auto &v: json5.get_obj())
     {
       if(v.first=="output")
@@ -87,44 +85,27 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
                                              "'output.prefix'");
                   output_prefix=o.second.get_str();
                 }
-              else if(o.first=="minimap")
+              else if(o.first=="type")
                 {
                   if(o.second.type()!=json5_parser::array_type)
                     throw std::runtime_error("Expected an array for "
-                                             "'output.minimap'");
+                                             "'output.type'");
                   for(auto &m: o.second.get_array ())
                     {
                       if(m.type()!=json5_parser::str_type)
                         throw std::runtime_error("Expected only strings in the "
-                                                 "'output.minimap' array");
-                      if(m.get_str()=="image")
-                        output_types.insert(hires::Hires::Image_Type
-                                            ::minimap_image);
-                      else if(m.get_str()=="hitmap")
-                        output_types.insert(hires::Hires::Image_Type
-                                            ::minimap_hitmap);
+                                                 "'output.type' array");
+                      if (m.get_str()=="minimap")
+                        compute_minimap=true;
+                      else if (m.get_str()=="hires")
+                        compute_hires=true;
+                      else if (m.get_str()=="elastic_net")
+                        compute_elastic_net=true;
                       else
-                        throw std::runtime_error("Expected either 'image' or "
-                                                 "'hitmap' in 'output.minimap'");
-                    }
-                }
-              else if(o.first=="hires")
-                {
-                  running_hires=true;
-                  if(o.second.type()!=json5_parser::array_type)
-                    throw std::runtime_error("Expected an array for "
-                                             "'output.hires'");
-                  for(auto &m: o.second.get_array ())
-                    {
-                      if(m.type()!=json5_parser::str_type)
-                        throw std::runtime_error("Expected only strings in the "
-                                                 "'output.hires' array");
-                      if(m.get_str()=="image")
-                        output_types.insert(hires::Hires::Image_Type
-                                            ::hires_image);
-                      else
-                        throw std::runtime_error
-                          ("Expected 'image' in 'output.hires'");
+                        throw std::runtime_error("Expected either 'minimap', "
+                                                 "'hires', or 'elastic_net' in "
+                                                 "'output.type', but got '"
+                                                 + m.get_str() + "'");
                     }
                 }
             }
@@ -136,36 +117,29 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
             throw std::runtime_error("Expected a string for 'input_file'");
           input_file=v.second.get_str();
         }
-      else if(v.first=="drf_file")
+      else if(v.first=="detector")
         {
-          if(v.second.type()!=json5_parser::str_type)
-            throw std::runtime_error("Expected a string for 'drf_file'");
-          drf_file=v.second.get_str();
+          if(v.second.type()!=json5_parser::int_type)
+            throw std::runtime_error("Expected an integer for 'detector'");
+          /// FWHM in arcmin from the Planck Explanatory Supplement DR1.
+          std::map<int,double> FWHM={{30,32.239},{44,27.005},{70,13.252},
+                                     {100,9.66},{143,7.27},{217,5.01},
+                                     {353,4.86},{545,4.84},{857,4.63}};
+          auto i=FWHM.find(v.second.get_int());
+          if (i==FWHM.end())
+            throw std::runtime_error
+              ("Invalid detector number.  Expected one of\n"
+               "\t(30,44,70,100,143,217,353,545,857), but got '"
+               + std::to_string(v.second.get_int()) + "'");
+          const double pi(boost::math::constants::pi<double>());
+          double radians=(i->second/60)*pi/180;
+          sigma_drf=radians/(2*sqrt(2*log(2.0)));
         }
-      else if(v.first=="iterations")
+      else if(v.first=="hires_iterations")
         {
-          if(v.second.type()==json5_parser::int_type)
-            {
-              iterations.insert(v.second.get_int());
-            }
-          else if(v.second.type()==json5_parser::array_type)
-            {
-              for(auto &d: v.second.get_array())
-                {
-                  iterations.insert(d.get_int());
-                }
-            }
-          else
-            {
-              throw std::runtime_error("Expected an int or an array of int's "
-                                       "for 'iterations'");
-            }
-        }
-      else if(v.first=="boost_function")
-        {
-          if(v.second.type()!=json5_parser::str_type)
-            throw std::runtime_error("Expected a string for 'boost_function'");
-          boost_function_string=v.second.get_str();
+          if(v.second.type()!=json5_parser::int_type)
+            throw std::runtime_error("Expected an integer for 'hires_iterations'");
+          hires_iterations=v.second.get_int();
         }
       else if(v.first=="columns")
         {
@@ -373,12 +347,12 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
 
   if(input_file.empty())
     throw std::runtime_error("input_file required");
-  if(running_hires && iterations.empty())
-    throw std::runtime_error("iterations required when running hires");
   if(angResolution==0)
     throw std::runtime_error("pos.angResolution required");
   
-  if(running_hires && !boost::filesystem::exists(drf_file))
-    throw std::runtime_error("drf_file :" + drf_file.string ()
-                             + "does not exist");
+  if((compute_hires || compute_elastic_net) && sigma_drf==0)
+    throw std::runtime_error("detector required when computing Hires or "
+                             "Elastic Net.");
+  if(compute_hires && hires_iterations < 1)
+    throw std::runtime_error("hires_iterations must be at least 1 when computing Hires.");
 }

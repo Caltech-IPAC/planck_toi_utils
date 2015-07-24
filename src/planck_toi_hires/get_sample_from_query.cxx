@@ -11,85 +11,85 @@
 #include "Gnomonic.hxx"
 #include "Sample.hxx"
 
-// FIXME: The mapping from offset to x,y,z,flux should be done
-// beforehand and not in the callback.  We should also pass sample,
-// lon, lat, etc. in through the callback rather than using globals.
-
-hires::Sample sample;
-std::vector<double> lon, lat, flux;
-hires::Gnomonic projection (0, 0);
-
-int callback (void *void_entry, int num_elements,
-              const std::vector<H5::DataType> &,
-              const std::vector<std::string> &names)
-
+class Query_Samples
 {
-  char *entry = static_cast<char *>(void_entry);
-  double x(std::numeric_limits<double>::quiet_NaN()),
-    y(std::numeric_limits<double>::quiet_NaN()),
-    z(std::numeric_limits<double>::quiet_NaN()),
-    flux_entry(std::numeric_limits<double>::quiet_NaN());
-  const int offsets[] = { 0, 4, 8, 12, 16, 24, 28 };
-  void *p;
+public:
+  std::vector<hires::Sample> &samples;
+  const hires::Gnomonic &projection;
 
-  for (int i = 0; i < num_elements; ++i)
-    {
-      p = entry + offsets[i];
+  size_t x_offset, y_offset, z_offset, signal_offset, angle_offset;
 
-      if (names[i]=="x")
-        {
-          x = *((float *)p);
-        }
-      else if (names[i]=="y")
-        {
-          y = *((float *)p);
-        }
-      else if (names[i]=="z")
-        {
-          z = *((float *)p);
-        }
-      else if (names[i]=="SIGNAL")
-        {
-          flux_entry = *((float *)p);
-        }
-      else if (names[i]=="MJD")
-        {
-        }
-      else if (names[i]=="PSI")
-        {
-        }
-      else if (names[i]=="SSO")
-        {
-        }
-      else
-        throw std::runtime_error ("Unknown type: " + names[i]);
-    }
-  /* FIXME: Do selection based on utc */
-  tinyhtm::Spherical coord (tinyhtm::Cartesian (x, y, z));
-  std::tie (x, y) = projection.degrees_to_xy (coord.lon (), coord.lat ());
+  Query_Samples(std::vector<hires::Sample> &Samples,
+                const hires::Gnomonic &Projection,
+                const std::vector<std::string> &names):
+    samples(Samples), projection(Projection)
+  {
+    // FIXME: If the offsets are hard coded, why bother checking the
+    // names?
+    const size_t offsets[] = { 0, 4, 8, 12, 16, 24, 28 };
+    size_t index=0;
+    for (auto &name: names)
+      {
+        if (name=="x")
+          {
+            x_offset=offsets[index];
+          }
+        else if (name=="y")
+          {
+            y_offset=offsets[index];
+          }
+        else if (name=="z")
+          {
+            z_offset=offsets[index];
+          }
+        else if (name=="SIGNAL")
+          {
+            signal_offset= offsets[index];
+          }
+        else if (name=="PSI")
+          {
+            angle_offset= offsets[index];
+          }
+        else if (name=="MJD")
+          {
+          }
+        else if (name=="SSO")
+          {
+          }
+        else
+          throw std::runtime_error ("Unknown type: " + name);
+        ++index;
+      }
+  }
 
-  lon.push_back (x);
-  lat.push_back (y);
-  flux.push_back (flux_entry);
-  return 1;
-}
+  bool add_entry(const char *entry)
+  {
+    double x(*reinterpret_cast<const float*>(entry + x_offset)),
+      y(*reinterpret_cast<const float*>(entry + y_offset)),
+      z(*reinterpret_cast<const float*>(entry + z_offset)),
+      signal(*reinterpret_cast<const float*>(entry + signal_offset)),
+      angle(*reinterpret_cast<const float*>(entry + angle_offset));
+  
+    /* FIXME: Do selection based on utc */
+    tinyhtm::Spherical coord (tinyhtm::Cartesian (x, y, z));
+    double x_projected, y_projected;
+    std::tie (x_projected, y_projected)
+      = projection.degrees_to_xy (coord.lon (), coord.lat ());
 
-hires::Sample get_sample_from_query
+    samples.emplace_back(x_projected,y_projected,signal,angle);
+    return true;
+  }
+};
+
+std::vector<hires::Sample> get_sample_from_query
 (const std::string &data_file,
- const std::unique_ptr<tinyhtm::Shape> &shape,
- const hires::Gnomonic &Projection)
+ const tinyhtm::Shape &shape,
+ const hires::Gnomonic &projection)
 {
-  projection = Projection;
   tinyhtm::Tree tree(data_file);
-  shape->search (tree, callback);
-  if (lon.size () != lat.size () || lon.size () != flux.size ())
-    throw std::runtime_error ("INTERNAL ERROR: sizes do not match");
-
-  sample.x = std::valarray<double>(lon.data (), lon.size ());
-  sample.y = std::valarray<double>(lat.data (), lat.size ());
-  sample.signal = std::valarray<double>(flux.data (), flux.size ());
-  sample.angle = std::valarray<double>(0.0, flux.size ());
-  // FIXME: We should really get rid of this
-  sample.id = 1;
-  return sample;
+  std::vector<hires::Sample> samples;
+  Query_Samples query_samples(samples,projection,tree.tree.element_names);
+  shape.search (tree, std::bind(&Query_Samples::add_entry,&query_samples,
+                                std::placeholders::_1));
+  return query_samples.samples;
 }

@@ -4,20 +4,16 @@
 #include "tinyhtm/Query.hxx"
 
 #include "Results.hxx"
+#include "Query.hxx"
 
 void thread_callback (const std::string &data_file,
                       const std::string &query_shape,
                       const std::string &vertex_string, uint64_t *num_results,
-                      Results *results)
+                      Query *query)
 {
-  tinyhtm::Query query (data_file, query_shape, vertex_string);
-
-  if (results->count && results->time_intervals.empty ())
-    *num_results = query.count ();
-  else
-    *num_results = query.search (std::bind (
-        &Results::callback, results, std::placeholders::_1,
-        std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
+  tinyhtm::Query htm_query (data_file, query_shape, vertex_string);
+  *num_results = htm_query.search (std::bind (&Query::callback, query,
+                                              std::placeholders::_1));
 }
 
 int main (int argc, char *argv[])
@@ -36,8 +32,6 @@ int main (int argc, char *argv[])
     }
   try
   {
-    bool count (false);
-
     /* Parse time intervals */
     std::list<std::pair<double, double> > time_intervals;
     std::stringstream ss (argv[3]);
@@ -54,10 +48,10 @@ int main (int argc, char *argv[])
       }
 
     const int num_input_files (argc - min_args);
-    std::vector<Results> results;
+    std::vector<Query> queries;
     for (int i = 0; i < num_input_files; ++i)
       {
-        results.emplace_back (time_intervals);
+        queries.emplace_back (time_intervals, argv[i + min_args]);
       }
 
     /* Run the query */
@@ -66,36 +60,27 @@ int main (int argc, char *argv[])
     for (int i = 0; i < num_input_files; ++i)
       {
         threads.emplace_back (thread_callback, argv[i + min_args], argv[1],
-                              argv[2], &num_result[i], &results[i]);
+                              argv[2], &num_result[i], &queries[i]);
       }
     for (auto &t : threads)
       t.join ();
 
     /* Print the results */
-    if (count)
+    Results results;
+    for (auto &q : queries)
       {
-        uint64_t num_results (0);
-        for (auto &n : num_result)
-          num_results += n;
+        results.data.insert (results.data.end (), q.results.data.begin (),
+                             q.results.data.end ());
+      }
+
+    std::string outpath (argv[4]);
+    if (outpath == "-")
+      {
+        std::cout << results;
       }
     else
       {
-        Results result (time_intervals);
-        for (auto &r : results)
-          {
-            result.data.insert (result.data.end (), r.data.begin (),
-                                r.data.end ());
-          }
-
-        std::string outpath (argv[4]);
-        if (outpath == "-")
-          {
-            std::cout << result;
-          }
-        else
-          {
-            result.write_fits (argv[4]);
-          }
+        results.write_fits (argv[4]);
       }
   }
   catch (std::runtime_error &e)

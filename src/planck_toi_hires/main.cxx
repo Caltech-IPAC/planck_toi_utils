@@ -26,27 +26,24 @@ void usage(std::ostream &os)
 
 hires::Sample get_sample_from_query
 (const std::string &data_file,
- const std::unique_ptr<tinyhtm::Shape> &shape,
+ const tinyhtm::Shape &shape,
  const hires::Gnomonic &Projection);
 
-void get_sample_from_table(const boost::filesystem::path &path,
-                           const std::map<std::string,std::string> &columns,
-                           const bool &shape_valid,
-                           const Coordinate_Frame &coordinate_frame,
-                           std::vector<hires::Sample> &samples,
-                           std::vector<std::pair<std::string, std::pair<std::string,
-                                                                        std::string> > >
-                           &keywords,
-                           tinyhtm::Spherical &center, tinyhtm::Spherical &size);
+std::vector<hires::Sample> get_sample_from_table
+(const boost::filesystem::path &path,
+ const std::map<std::string,std::string> &columns,
+ const bool &shape_valid,
+ const Coordinate_Frame &coordinate_frame,
+ std::vector<std::pair<std::string, std::pair<std::string,std::string> > >
+ &keywords,
+ tinyhtm::Spherical &center, tinyhtm::Spherical &size);
 
 void read_input(json5_parser::mValue &json5, const std::string &arg,
                 std::string &output_prefix, std::string &input_file,
-                boost::filesystem::path &drf_file,
-                std::set<hires::Hires::Image_Type> &output_types,
+                bool &compute_minimap, bool &compute_hires,
+                bool &compute_elastic_net, double &sigma_drf, int &hires_iterations,
                 std::map<std::string,std::string> &columns,
                 Coordinate_Frame &coordinate_frame,
-                std::set<int> &iterations,
-                std::string &boost_function_string,
                 std::unique_ptr<tinyhtm::Shape> &shape,
                 std::vector<std::pair<std::string, std::pair<std::string,
                                                              std::string> > >
@@ -74,21 +71,18 @@ int main (int argc, char *argv[])
   try
     {
       std::string output_prefix, input_file;
-      boost::filesystem::path drf_file("share/hires/beams");
       std::map<std::string,std::string> columns={{"signal","signal"},
                                                  {"psi","psi"}};
       Coordinate_Frame coordinate_frame=Coordinate_Frame::ICRS;
-      double angResolution;
-      std::string boost_function_string;
-      std::set<int> iterations;
+      double angResolution, sigma_drf(0);
+      int hires_iterations=0;
       std::unique_ptr<tinyhtm::Shape> shape;
       std::vector<std::pair<std::string, std::pair<std::string,
                                                    std::string> > > keywords;
-      std::set<hires::Hires::Image_Type> output_types;
-      read_input(json5,argument,output_prefix,input_file,drf_file,
-                 output_types,columns,coordinate_frame,iterations,
-                 boost_function_string,shape,keywords,
-                 angResolution);
+      bool compute_minimap(false), compute_hires(false), compute_elastic_net(false);
+      read_input(json5,argument,output_prefix,input_file,compute_minimap,
+                 compute_hires,compute_elastic_net,sigma_drf,hires_iterations,
+                 columns,coordinate_frame,shape,keywords,angResolution);
 
       /// Load the samples
       std::vector<hires::Sample> samples;
@@ -105,32 +99,36 @@ int main (int argc, char *argv[])
             throw std::runtime_error("Shape required for this input file: "
                                      + input_file);
           hires::Gnomonic projection (center.lon(),center.lat());
-          samples.emplace_back(get_sample_from_query(input_file, shape,
+          samples.emplace_back(get_sample_from_query(input_file, *shape,
                                                      projection));
         }
       else
         {
-          get_sample_from_table(path, columns, shape.operator bool(),
-                                coordinate_frame, samples, keywords, center,
-                                size);
+          samples=get_sample_from_table(path, columns, shape.operator bool(),
+                                        coordinate_frame, keywords, center,
+                                        size);
         }
 
-      std::array<int,2> nxy{{static_cast<int>(size.lon()/angResolution),
-            static_cast<int>(size.lat()/angResolution)}};
+      std::array<size_t,2> nxy{{static_cast<size_t>(size.lon()/angResolution),
+            static_cast<size_t>(size.lat()/angResolution)}};
       std::array<double,2> crval{{center.lon(),center.lat()}};
 
       constexpr double pi=boost::math::constants::pi<double>();
-      hires::Hires hires (nxy,crval,angResolution*pi/180,output_types,drf_file,
-                          keywords,samples);
-      hires.write_output (output_prefix);
-
-      const size_t iter_max=(iterations.empty() || !hires.running_hires()) ? 0
-        : *iterations.rbegin() + 1;
-      while (hires.iteration < iter_max)
+      hires::Hires hires (nxy,crval,angResolution*pi/180,keywords,samples);
+      if (compute_minimap)
         {
-          hires.iterate ();
-          if (iterations.find (hires.iteration) != iterations.end ())
-            hires.write_output (output_prefix);
+          hires.compute_minimap ();
+          hires.write_minimap (output_prefix);
+        }
+      if (compute_hires)
+        {
+          hires.compute_hires (sigma_drf, hires_iterations);
+          hires.write_hires (output_prefix);
+        }
+      if (compute_elastic_net)
+        {
+          hires.compute_elastic_net (sigma_drf);
+          hires.write_elastic_net (output_prefix);
         }
     }
   catch (CCfits::FitsError &e)

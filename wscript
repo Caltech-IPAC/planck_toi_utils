@@ -78,6 +78,7 @@ def build(ctx):
     ctx.program(
         source=[
             'src/planck_toi_search/main.cxx',
+            'src/planck_toi_search/Query.cxx',
             'src/planck_toi_search/Results.cxx'],
         target='planck_toi_search',
         name='planck_toi_search',

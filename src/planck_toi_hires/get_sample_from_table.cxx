@@ -21,16 +21,14 @@ double extract_number(const std::map<std::string, Tablator::Property>
 }
 
 
-void get_sample_from_table(const boost::filesystem::path &path,
-                           const std::map<std::string,std::string> &columns,
-                           const bool &shape_valid,
-                           const Coordinate_Frame &coordinate_frame,
-                           std::vector<hires::Sample> &samples,
-                           std::vector<std::pair<std::string,
-                                                 std::pair<std::string,
-                                                           std::string> > >
-                           &keywords,
-                           tinyhtm::Spherical &center, tinyhtm::Spherical &size)
+std::vector<hires::Sample> get_sample_from_table
+(const boost::filesystem::path &path,
+ const std::map<std::string,std::string> &columns,
+ const bool &shape_valid,
+ const Coordinate_Frame &coordinate_frame,
+ std::vector<std::pair<std::string,std::pair<std::string,std::string> > >
+ &keywords,
+ tinyhtm::Spherical &center, tinyhtm::Spherical &size)
 {
   Tablator::Table table(path);
 
@@ -81,16 +79,8 @@ void get_sample_from_table(const boost::filesystem::path &path,
     }
   hires::Gnomonic projection (center.lon (), center.lat ());
 
-  samples.push_back(hires::Sample());
-  auto &x=samples[0].x;
-  auto &y=samples[0].y;
-  auto &signal=samples[0].signal;
-  auto &psi=samples[0].angle;
-
-  x.resize(table.size());
-  y.resize(table.size());
-  signal.resize(table.size());
-  psi.resize(table.size());
+  std::vector<hires::Sample> samples;
+  samples.reserve(table.size());
 
   size_t ra_offset(table.compound_type.getMemberOffset
                    (table.compound_type.getMemberIndex(columns.at("ra")))),
@@ -108,13 +98,14 @@ void get_sample_from_table(const boost::filesystem::path &path,
                                            +ra_offset),
         dec=*reinterpret_cast<double*>(table.data.data()+row*table.row_size
                                        +dec_offset);
-      std::tie(x[row],y[row])=projection.degrees_to_xy(ra,dec);
+      double x,y;
+      std::tie(x,y)=projection.degrees_to_xy(ra,dec);
       // FIXME: Figure out whether float or double automatically
-      signal[row]=*reinterpret_cast<float*>(table.data.data()+row*table.row_size
+      float signal=*reinterpret_cast<float*>(table.data.data()+row*table.row_size
                                              +signal_offset);
-      psi[row]=*reinterpret_cast<float*>(table.data.data()+row*table.row_size
+      float psi=*reinterpret_cast<float*>(table.data.data()+row*table.row_size
                                           +psi_offset);
+      samples.emplace_back(x,y,signal,psi);
     }
-  // FIXME: We should really get rid of this
-  samples[0].id=1;
+  return samples;
 }
