@@ -14,7 +14,7 @@ def configure(conf):
         if not conf.options.hires_libdir:
             conf.options.hires_libdir=conf.options.hires_dir + "/lib"
     frag="#include <Sample.hxx>\n" + 'int main()\n' \
-        + "{hires::Sample sample;}\n"
+        + "{hires::Sample sample(1,2,3,4);}\n"
     if conf.options.hires_incdir:
         hires_inc=[conf.options.hires_incdir]
     else:
