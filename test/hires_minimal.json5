@@ -1,9 +1,11 @@
 {
     input_file:"test/hires_minimal.fits",
+    detector:30,
+    hires_iterations:32,
     output:
     {
-        prefix:"test/hires_minimal_",
-        type:["minimap"]
+        prefix:"test/hires_minimal/",
+        type:["minimap","hires","elastic_net"]
     },
     pos:
     {

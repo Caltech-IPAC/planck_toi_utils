@@ -1,11 +1,11 @@
 {
     input_file:"test/hires_large.fits",
     detector:44,
-    hires_iterations:2,
+    hires_iterations:32,
     output:
     {
         prefix:"test/hires_large/",
-        type:["minimap","hires"]
+        type:["minimap","hires","elastic_net"]
     },
     pos:
     {
