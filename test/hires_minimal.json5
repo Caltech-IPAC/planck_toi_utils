@@ -3,7 +3,7 @@
     output:
     {
         prefix:"test/hires_minimal_",
-        minimap:["image"]
+        type:["minimap"]
     },
     pos:
     {
