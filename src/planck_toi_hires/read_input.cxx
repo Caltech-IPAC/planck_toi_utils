@@ -33,8 +33,8 @@ tinyhtm::Spherical extract_position(const json5_parser::mValue &value)
 
 void read_input(json5_parser::mValue &json5, const std::string &arg,
                 std::string &output_prefix, std::string &input_file,
-                bool &compute_minimap, bool &compute_hires,
-                bool &compute_elastic_net, double &sigma_drf, int &hires_iterations,
+                bool &compute_minimap, bool &compute_mcm,
+                bool &compute_elastic_net, double &sigma_drf, int &mcm_iterations,
                 std::map<std::string,std::string> &columns,
                 Coordinate_Frame &coordinate_frame,
                 std::unique_ptr<tinyhtm::Shape> &shape,
@@ -97,13 +97,13 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
                                                  "'output.type' array");
                       if (m.get_str()=="minimap")
                         compute_minimap=true;
-                      else if (m.get_str()=="hires")
-                        compute_hires=true;
+                      else if (m.get_str()=="mcm")
+                        compute_mcm=true;
                       else if (m.get_str()=="elastic_net")
                         compute_elastic_net=true;
                       else
                         throw std::runtime_error("Expected either 'minimap', "
-                                                 "'hires', or 'elastic_net' in "
+                                                 "'mcm', or 'elastic_net' in "
                                                  "'output.type', but got '"
                                                  + m.get_str() + "'");
                     }
@@ -135,11 +135,11 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
           double radians=(i->second/60)*pi/180;
           sigma_drf=radians/(2*sqrt(2*log(2.0)));
         }
-      else if(v.first=="hires_iterations")
+      else if(v.first=="mcm_iterations")
         {
           if(v.second.type()!=json5_parser::int_type)
-            throw std::runtime_error("Expected an integer for 'hires_iterations'");
-          hires_iterations=v.second.get_int();
+            throw std::runtime_error("Expected an integer for 'mcm_iterations'");
+          mcm_iterations=v.second.get_int();
         }
       else if(v.first=="columns")
         {
@@ -350,9 +350,10 @@ void read_input(json5_parser::mValue &json5, const std::string &arg,
   if(angResolution==0)
     throw std::runtime_error("pos.angResolution required");
   
-  if((compute_hires || compute_elastic_net) && sigma_drf==0)
-    throw std::runtime_error("detector required when computing Hires or "
+  if((compute_mcm || compute_elastic_net) && sigma_drf==0)
+    throw std::runtime_error("detector required when computing MCM or "
                              "Elastic Net.");
-  if(compute_hires && hires_iterations < 1)
-    throw std::runtime_error("hires_iterations must be at least 1 when computing Hires.");
+  if(compute_mcm && mcm_iterations < 1)
+    throw std::runtime_error("mcm_iterations must be at least 1 when computing "
+                             "MCM.");
 }

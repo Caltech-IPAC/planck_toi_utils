@@ -40,8 +40,8 @@ std::vector<hires::Sample> get_sample_from_table
 
 void read_input(json5_parser::mValue &json5, const std::string &arg,
                 std::string &output_prefix, std::string &input_file,
-                bool &compute_minimap, bool &compute_hires,
-                bool &compute_elastic_net, double &sigma_drf, int &hires_iterations,
+                bool &compute_minimap, bool &compute_mcm,
+                bool &compute_elastic_net, double &sigma_drf, int &mcm_iterations,
                 std::map<std::string,std::string> &columns,
                 Coordinate_Frame &coordinate_frame,
                 std::unique_ptr<tinyhtm::Shape> &shape,
@@ -75,13 +75,14 @@ int main (int argc, char *argv[])
                                                  {"psi","psi"}};
       Coordinate_Frame coordinate_frame=Coordinate_Frame::ICRS;
       double angResolution, sigma_drf(0);
-      int hires_iterations=0;
+      int mcm_iterations=0;
       std::unique_ptr<tinyhtm::Shape> shape;
       std::vector<std::pair<std::string, std::pair<std::string,
                                                    std::string> > > keywords;
-      bool compute_minimap(false), compute_hires(false), compute_elastic_net(false);
+      bool compute_minimap(false), compute_mcm(false),
+        compute_elastic_net(false);
       read_input(json5,argument,output_prefix,input_file,compute_minimap,
-                 compute_hires,compute_elastic_net,sigma_drf,hires_iterations,
+                 compute_mcm,compute_elastic_net,sigma_drf,mcm_iterations,
                  columns,coordinate_frame,shape,keywords,angResolution);
 
       /// Load the samples
@@ -120,10 +121,10 @@ int main (int argc, char *argv[])
           hires.compute_minimap ();
           hires.write_minimap (output_prefix);
         }
-      if (compute_hires)
+      if (compute_mcm)
         {
-          hires.compute_hires (sigma_drf, hires_iterations);
-          hires.write_hires (output_prefix);
+          hires.compute_mcm (sigma_drf, mcm_iterations);
+          hires.write_mcm (output_prefix);
         }
       if (compute_elastic_net)
         {
