@@ -74,7 +74,7 @@ std::vector<hires::Sample> get_sample_from_table
         }
       else
         {
-          size.lon()=size.lat()=2*std::stod(iter->second.value);
+          size.lon()=size.lat()=std::sqrt(2.0)*std::stod(iter->second.value);
         }
     }
   hires::Gnomonic projection (center.lon (), center.lat ());
