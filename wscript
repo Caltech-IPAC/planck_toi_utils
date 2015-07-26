@@ -45,7 +45,6 @@ def build(ctx):
                 'src/lzf/lzf/lzf_c.cxx', 'src/lzf/lzf/lzf_d.cxx'],
         target='compare',
         name='compare',
-        install_path=os.path.join(ctx.env.PREFIX, 'bin'),
         use=['cxx11','hdf5_cxx','BOOST']
     )
 
