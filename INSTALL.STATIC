@@ -1,16 +1,47 @@
-On IRSA systems, run these two commands to create a static executable.
+Armadillo makes it impossible to create static executables.  Instead,
+we bundle all of the dynamic libraries.  First, build as normal.  This
+will create a planck_toi_hires executable that uses rpath to find the
+correct libraries.  The next step is to remove that.
 
-  $CM_ENV_DIR/core/bin/g++ build/src/planck_toi_hires/main.cxx.6.o build/src/planck_toi_hires/read_input.cxx.6.o build/src/planck_toi_hires/get_sample_from_query.cxx.6.o build/src/planck_toi_hires/get_sample_from_table.cxx.6.o -o planck_toi_hires_static ../libhires/lib/libhires.a ../tablator/lib/libtablator.a $CM_TPS_DIR/lib/libCCfits.a $CM_TPS_DIR/lib/libcfitsio.a $CM_ENV_DIR/misc/lib/libboost_filesystem.a $CM_ENV_DIR/misc/lib/libboost_system.a $CM_ENV_DIR/misc/lib/libboost_regex.a $CM_TPS_DIR/lib/libhdf5_cpp.a $CM_TPS_DIR/lib/libhdf5.a ../libtinyhtm/lib/libtinyhtm.a ../libtinyhtm/lib/libtinyhtmcxx.a $CM_TPS_DIR/lib/libwcs.a ../json5_parser/lib/libjson5_parser.a -lpthread -lz -static-libgcc -static-libstdc++
-  strip planck_toi_hires_static
+  cd build/
+  /irsa/cm/env_1.9_mnt/core/bin/g++ -std=c++11 src/planck_toi_hires/main.cxx.6.o src/planck_toi_hires/read_input.cxx.6.o src/planck_toi_hires/get_sample_from_query.cxx.6.o src/planck_toi_hires/get_sample_from_table.cxx.6.o -o /stage/irsa-staff-wlandry/ws/planck_toi_utils/build/planck_toi_hires -Wl,-Bstatic -L/irsa/cm/env_1.9_mnt/core/lib -Wl,-Bdynamic -L/irsa/cm/dev_1.9/tps/lib -L/irsa/cm/dev_1.9/tps/lib -L/irsa/cm/env_1.9_mnt/core/lib -L/irsa/cm/dev_1.9/tps/lib -L/irsa/cm/dev_1.9/tps/lib -L/stage/irsa-staff-wlandry/ws/libtinyhtm/lib -L/stage/irsa-staff-wlandry/ws/libtinyhtm/lib -L/stage/irsa-staff-wlandry/ws/libhires/lib -L/stage/irsa-staff-wlandry/ws/json5_parser//lib -L/stage/irsa-staff-wlandry/ws/tablator//lib -lcfitsio -lCCfits -lboost_filesystem -lboost_system -lboost_regex -lhdf5 -lhdf5 -lhdf5_cpp -ltinyhtm -lpthread -ltinyhtmcxx -ltinyhtm -lpthread -lhires -ljson5_parser -ltablator
 
-Running ldd on the result gives
+Copy that binary to distribution directory.
 
-  $ ldd planck_toi_hires_static                                                                                                                                                                                                                        
-        linux-vdso.so.1 =>  (0x00007fff5e5fd000)
-        libpthread.so.0 => /lib64/libpthread.so.0 (0x0000003581200000)
-        libz.so.1 => /lib64/libz.so.1 (0x0000003581600000)
-        libm.so.6 => /lib64/libm.so.6 (0x0000003580e00000)
-        libc.so.6 => /lib64/libc.so.6 (0x0000003580600000)
-        /lib64/ld-linux-x86-64.so.2 (0x0000003580200000)
+  cp planck_toi_hires ../../planck_toi_hires_binary/libs
 
-which are all provided by the kernel.
+Next copy all of the dynamic libraries to this distribution directory.
+
+  cd ../../planck_toi_hires_binary/libs
+  cp /usr/lib64/libgfortran.so.1 .
+  cp /usr/lib64/liblapack.so.3 .
+  cp /usr/lib64/libblas.so.3 .
+  cp /irsa/cm/env_1.9_mnt/core/lib/libboost_random.so.1.53.0 .
+  cp /irsa/cm/env_1.9_mnt/core/lib/libboost_unit_test_framework.so.1.53.0 .
+  cp /irsa/cm/env_1.9_mnt/core/lib/libboost_program_options.so.1.53.0 .
+  cp /usr/lib64/libbz2.so.1 .
+  cp /usr/lib64/libxml2.so.2 .
+  cp /irsa/cm/dev_1.9/tps/lib/libarmadillo.so.4 .
+  cp /irsa/cm/dev_1.9/tps/lib/libcfitsio.so .
+  cp /irsa/cm/dev_1.9/tps/lib/libCCfits.so.0 .
+  cp /irsa/cm/env_1.9_mnt/core/lib/libboost_filesystem.so.1.53.0 .
+  cp /irsa/cm/env_1.9_mnt/core/lib/libboost_system.so.1.53.0 .
+  cp /irsa/cm/env_1.9_mnt/core/lib/libboost_regex.so.1.53.0 .
+  cp /irsa/cm/dev_1.9/tps/lib/libhdf5.so.7 .
+  cp /irsa/cm/dev_1.9/tps/lib/libhdf5_cpp.so.7 .
+  cp /stage/irsa-staff-wlandry/ws/libtinyhtm/lib/libtinyhtm.so .
+  cp /stage/irsa-staff-wlandry/ws/libtinyhtm/lib/libtinyhtmcxx.so .
+  cp /stage/irsa-staff-wlandry/ws/libhires/lib/libhires.so .
+  cp /stage/irsa-staff-wlandry/ws/json5_parser//lib/libjson5_parser.so .
+  cp /stage/irsa-staff-wlandry/ws/tablator//lib/libtablator.so .
+  cp /irsa/cm/env_1.9_mnt/core/lib64/libstdc++.so.6 .
+  cp /irsa/cm/env_1.9_mnt/core/lib64/libgcc_s.so.1 .
+  cp /usr/lib64/libicuuc.so.36 .
+  cp /usr/lib64/libicui18n.so.36 .
+  cp /usr/lib64/libicudata.so.36 .
+  cp /usr/lib64/libz.so.1 .
+  cp /irsa/cm/env_1.9_mnt/core/lib64/libgomp.so.1 .
+  cp /irsa/cm/env_1.9_mnt/core/lib/libboost_iostreams.so.1.53.0 .
+  cp /home/wlandry/ws/mlpack-1.0.12/lib/libmlpack.so.1 .
+
+To run, set LD_LIBRARY_PATH to point to this directory.
