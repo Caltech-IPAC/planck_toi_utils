@@ -1,7 +1,7 @@
 {
     input_file:"test/hires_large.fits",
     detector:44,
-    mcm_iterations:32,
+    mcm_iterations:2,
     output:
     {
         prefix:"test/hires_large/",
