@@ -18,30 +18,18 @@ For example, if you want to put all of the results into the directory OUT, \
 then set prefix to 'OUT'.  To output to standard output, set the prefix to '-'."
                     "type": "string"
                 },
-                "minimap":
+                "type":
                 {
                     "description": "An array of strings with the types of \
-minimap products to output.  You usually only want 'image'."
+images to output."
                     "type": "array",
                     "items":
                     {
                         "enum":
                         [
-                            "image",
-                            "hitmap"
-                        ]
-                    }
-                },
-                "hires":
-                {
-                    "description": "An array of strings with the types of \
-hires products to output.  You usually only want 'image'."
-                    "type": "array",
-                    "items":
-                    {
-                        "enum":
-                        [
-                            "image",
+                            "minimap",
+                            "mcm",
+                            "elastic_net"
                         ]
                     }
                 }
@@ -52,22 +40,15 @@ hires products to output.  You usually only want 'image'."
             "description": "The input file containing the TOI's",
             "type": "string"
         },
-        "drf_file":
+        "detector":
         {
-            "description": "A file containing the DRF's (Detector \
-Response Function)",
-            "type": "string"
+            "description": "The frequency of the detector in GHz",
+            "type": "int"
         },
-        "iterations":
+        "mcm_iterations":
         {
-            "description": "A number or array of numbers denoting when \
-to output hires images"
-            "type": "array",
-            "items":
-            {
-                "type": "integer",
-                "minimum": 0
-            }
+            "description": "The number of iteration for MCM"
+            "type": "int"
         }
         "pos":
         {
