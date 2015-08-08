@@ -11,7 +11,7 @@
 
 #include "Coordinate_Frame.hxx"
 
-double extract_number(const std::map<std::string, Tablator::Property>
+double extract_number(const std::map<std::string, tablator::Property>
                       &properties, const std::string &key)
 {
   auto iter=properties.find(key);
@@ -30,13 +30,13 @@ std::vector<hires::Sample> get_sample_from_table
  &keywords,
  tinyhtm::Spherical &center, tinyhtm::Spherical &size)
 {
-  Tablator::Table table(path);
+  tablator::Table table(path);
 
   /// Get BUNIT from the signal column
   keywords.push_back({"BUNIT",{table.fields_properties.at
           (table.compound_type.getMemberIndex(columns.at("signal")))
           .attributes["unit"],""}});
-  auto keyword_mapping=Tablator::fits_keyword_mapping(true);
+  auto keyword_mapping=tablator::fits_keyword_mapping(true);
   for(auto &p: table.properties)
     {
       std::string name=p.first;

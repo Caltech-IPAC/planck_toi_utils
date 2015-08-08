@@ -93,7 +93,7 @@ int main (int argc, char *argv[])
         std::tie(center,size)=shape->bounding_box();
 
       boost::filesystem::path path(input_file);
-      if(Tablator::Format(path).is_hdf5() &&
+      if(tablator::Format(path).is_hdf5() &&
          H5::H5File(input_file, H5F_ACC_RDONLY).getNumObjs()==2)
         {
           if(!shape)

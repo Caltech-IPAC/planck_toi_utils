@@ -13,7 +13,7 @@ def configure(conf):
         if not conf.options.tablator_libdir:
             conf.options.tablator_libdir=conf.options.tablator_dir + "/lib"
     frag="#include <tablator/Format.hxx>\n" + 'int main()\n' \
-        + "{Tablator::Format();}\n"
+        + "{tablator::Format();}\n"
     if conf.options.tablator_incdir:
         tablator_inc=[conf.options.tablator_incdir]
     else:
