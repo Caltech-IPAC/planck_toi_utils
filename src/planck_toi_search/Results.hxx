@@ -15,7 +15,8 @@
 class Results
 {
 public:
-  std::vector<std::tuple<float, float, float, float, double, float, char> > data;
+  std::vector<std::tuple<float, float, float, float, double, float, char> >
+  data;
   void write_fits (char *fname);
 };
 

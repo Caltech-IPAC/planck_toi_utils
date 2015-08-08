@@ -12,8 +12,8 @@ void thread_callback (const std::string &data_file,
                       Query *query)
 {
   tinyhtm::Query htm_query (data_file, query_shape, vertex_string);
-  *num_results = htm_query.search (std::bind (&Query::callback, query,
-                                              std::placeholders::_1));
+  *num_results = htm_query.search (
+      std::bind (&Query::callback, query, std::placeholders::_1));
 }
 
 int main (int argc, char *argv[])

@@ -25,7 +25,8 @@ bool Query::callback (const char *entry)
           psi (*reinterpret_cast<const float *>(entry + psi_offset)),
           signal (*reinterpret_cast<const float *>(entry + signal_offset)),
           sso (*(entry + sso_offset));
-      results.data.push_back (std::make_tuple (x, y, z, psi, mjd, signal, sso));
+      results.data.push_back (
+          std::make_tuple (x, y, z, psi, mjd, signal, sso));
     }
   return in_interval;
 }
