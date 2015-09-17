@@ -12,13 +12,16 @@
 #include "Coordinate_Frame.hxx"
 
 double
-extract_number (const std::map<std::string, tablator::Property> &properties,
+extract_number (const std::vector<std::pair<std::string, tablator::Property> >
+                &properties,
                 const std::string &key)
 {
-  auto iter = properties.find (key);
-  if (iter == properties.end ())
-    throw std::runtime_error ("Expected " + key + " in the table");
-  return std::stod (iter->second.value);
+  for (auto &property: properties)
+    {
+      if (property.first==key)
+        return std::stod (property.second.value);
+    }
+  throw std::runtime_error ("Expected " + key + " in the table");
 }
 
 std::vector<hires::Sample> get_sample_from_table (
@@ -64,10 +67,16 @@ std::vector<hires::Sample> get_sample_from_table (
           break;
         }
 
-      auto iter = table.properties.find ("pos.radius");
+      auto iter = std::find_if
+        (table.properties.begin (), table.properties.end (),
+         [&] (const std::pair<std::string,tablator::Property> &p)
+         { return p.first == "pos.radius";});
       if (iter == table.properties.end ())
         {
-          iter = table.properties.find ("pos.width");
+          iter = std::find_if
+            (table.properties.begin (), table.properties.end (),
+             [&] (const std::pair<std::string,tablator::Property> &p)
+             { return p.first == "pos.width";});
           if (iter == table.properties.end ())
             throw std::runtime_error ("Either pos.radius or pos.width must "
                                       "exist in the table if "
