@@ -39,7 +39,8 @@ std::vector<hires::Sample> get_sample_from_table (
 void read_input (
     json5_parser::mValue &json5, const std::string &arg,
     std::string &output_prefix, std::string &input_file, bool &compute_minimap,
-    bool &compute_mcm, bool &compute_elastic_net, double &sigma_drf,
+    bool &compute_mcm, bool &compute_elastic_net, bool &compute_tikhonov,
+    double &sigma_drf,
     int &mcm_iterations, std::map<std::string, std::string> &columns,
     Coordinate_Frame &coordinate_frame, std::unique_ptr<tinyhtm::Shape> &shape,
     std::vector<std::pair<std::string,
@@ -76,9 +77,10 @@ int main (int argc, char *argv[])
     std::vector<std::pair<std::string, std::pair<std::string, std::string> > >
     keywords;
     bool compute_minimap (false), compute_mcm (false),
-        compute_elastic_net (false);
+      compute_elastic_net (false), compute_tikhonov (false);
     read_input (json5, argument, output_prefix, input_file, compute_minimap,
-                compute_mcm, compute_elastic_net, sigma_drf, mcm_iterations,
+                compute_mcm, compute_elastic_net, compute_tikhonov,
+                sigma_drf, mcm_iterations,
                 columns, coordinate_frame, shape, keywords, angResolution);
 
     /// Load the samples
@@ -129,6 +131,11 @@ int main (int argc, char *argv[])
       {
         hires.compute_elastic_net (sigma_drf);
         hires.write_elastic_net (output_prefix);
+      }
+    if (compute_tikhonov)
+      {
+        hires.compute_tikhonov (sigma_drf);
+        hires.write_tikhonov (output_prefix);
       }
   }
   catch (CCfits::FitsException &e) { std::cerr << e.message () << "\n"; }

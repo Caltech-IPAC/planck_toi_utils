@@ -35,7 +35,7 @@ tinyhtm::Spherical extract_position (const json5_parser::mValue &value)
 void read_input (
     json5_parser::mValue &json5, const std::string &arg,
     std::string &output_prefix, std::string &input_file, bool &compute_minimap,
-    bool &compute_mcm, bool &compute_elastic_net, double &sigma_drf,
+    bool &compute_mcm, bool &compute_elastic_net, bool &compute_tikhonov, double &sigma_drf,
     int &mcm_iterations, std::map<std::string, std::string> &columns,
     Coordinate_Frame &coordinate_frame, std::unique_ptr<tinyhtm::Shape> &shape,
     std::vector<std::pair<std::string,
@@ -101,11 +101,13 @@ void read_input (
                         compute_mcm = true;
                       else if (m.get_str () == "elastic_net")
                         compute_elastic_net = true;
+                      else if (m.get_str () == "tikhonov")
+                        compute_tikhonov = true;
                       else
-                        throw std::runtime_error ("Expected either 'minimap', "
-                                                  "'mcm', or 'elastic_net' in "
-                                                  "'output.type', but got '"
-                                                  + m.get_str () + "'");
+                        throw std::runtime_error
+                          ("Expected either 'minimap', 'mcm', 'elastic_net', "
+                           "or 'tikhonov' in 'output.type', but got '"
+                           + m.get_str () + "'");
                     }
                 }
             }
@@ -361,9 +363,10 @@ void read_input (
   if (angResolution == 0)
     throw std::runtime_error ("pos.angResolution required");
 
-  if ((compute_mcm || compute_elastic_net) && sigma_drf == 0)
-    throw std::runtime_error ("detector required when computing MCM or "
-                              "Elastic Net.");
+  if ((compute_mcm || compute_elastic_net || compute_tikhonov)
+      && sigma_drf == 0)
+    throw std::runtime_error ("detector required when computing MCM, "
+                              "Elastic Net, or Tikhonov.");
   if (compute_mcm && mcm_iterations < 1)
     throw std::runtime_error (
         "mcm_iterations must be at least 1 when computing "

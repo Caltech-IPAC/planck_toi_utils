@@ -29,7 +29,8 @@ images to output."
                         [
                             "minimap",
                             "mcm",
-                            "elastic_net"
+                            "elastic_net",
+                            "tikhonov"
                         ]
                     }
                 }
