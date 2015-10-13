@@ -264,7 +264,11 @@ int main (int argc, char *argv[])
 
                   entry.psi = hdf_entry.psi;
                   const double MJD_1958_01_01 = 36204.0;
-                  entry.mjd = MJD_1958_01_01 + hdf_entry.utc / 86400.0;
+                  /// The UTC from Planck is not in seconds and needs
+                  /// to be scaled.
+                  const double UTC_SCALE=65536.0;
+                  entry.mjd = MJD_1958_01_01 + 
+                      hdf_entry.utc / (UTC_SCALE * 86400.0);
                   entry.signal = hdf_entry.signal;
                   entry.sso = hdf_entry.sso;
 
