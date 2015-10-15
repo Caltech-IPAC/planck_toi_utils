@@ -76,7 +76,7 @@ planck_tod_entry::types{
 
 int main (int argc, char *argv[])
 {
-  const size_t memsz = 210 * 1024 * 1024 * 1024L;
+  const size_t memsz = 64 * 1024 * 1024 * 1024L;
   // const size_t memsz = sizeof(planck_tod_entry)*2*16*64*1024;
   // const size_t memsz = sizeof(planck_tod_entry)*2*16*64*1024*1024;
   const size_t ioblksz (sizeof(planck_tod_entry) * 32 * 1024);
