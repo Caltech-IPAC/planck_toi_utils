@@ -1,18 +1,19 @@
 Armadillo makes it impossible to create static executables.  Instead,
 we bundle all of the dynamic libraries.  First, build as normal.  This
 will create a planck_toi_hires executable that uses rpath to find the
-correct libraries.  The next step is to remove that.
+correct libraries.  The next step is to change the final link step to
+look in a local lib/ directory.
 
   cd build/
-  /irsa/cm/env_1.9_mnt/core/bin/g++ -std=c++11 src/planck_toi_hires/main.cxx.6.o src/planck_toi_hires/read_input.cxx.6.o src/planck_toi_hires/get_sample_from_query.cxx.6.o src/planck_toi_hires/get_sample_from_table.cxx.6.o -o /stage/irsa-staff-wlandry/ws/planck_toi_utils/build/planck_toi_hires -Wl,-Bstatic -L/irsa/cm/env_1.9_mnt/core/lib -Wl,-Bdynamic -L/irsa/cm/dev_1.9/tps/lib -L/irsa/cm/dev_1.9/tps/lib -L/irsa/cm/env_1.9_mnt/core/lib -L/irsa/cm/dev_1.9/tps/lib -L/irsa/cm/dev_1.9/tps/lib -L/stage/irsa-staff-wlandry/ws/libtinyhtm/lib -L/stage/irsa-staff-wlandry/ws/libtinyhtm/lib -L/stage/irsa-staff-wlandry/ws/libhires/lib -L/stage/irsa-staff-wlandry/ws/json5_parser//lib -L/stage/irsa-staff-wlandry/ws/tablator//lib -lcfitsio -lCCfits -lboost_filesystem -lboost_system -lboost_regex -lhdf5 -lhdf5 -lhdf5_cpp -ltinyhtm -lpthread -ltinyhtmcxx -ltinyhtm -lpthread -lhires -ljson5_parser -ltablator
+  /irsa/cm/env_1.9_mnt/core/bin/g++ -std=c++11 src/planck_toi_hires/main.cxx.6.o src/planck_toi_hires/read_input.cxx.6.o src/planck_toi_hires/get_sample_from_query.cxx.6.o src/planck_toi_hires/get_sample_from_table.cxx.6.o -o /stage/irsa-staff-wlandry/ws/planck_toi_utils/build/planck_toi_hires -Wl,-rpath,'$ORIGIN/lib' -Wl,-Bstatic -L/irsa/cm/env_1.9_mnt/core/lib -Wl,-Bdynamic -L/irsa/cm/dev_1.9/tps/lib -L/irsa/cm/dev_1.9/tps/lib -L/irsa/cm/env_1.9_mnt/core/lib -L/irsa/cm/dev_1.9/tps/lib -L/irsa/cm/dev_1.9/tps/lib -L/stage/irsa-staff-wlandry/ws/libtinyhtm/lib -L/stage/irsa-staff-wlandry/ws/libtinyhtm/lib -L/stage/irsa-staff-wlandry/ws/libhires/lib -L/irsa/cm/dev_1.9/json5_parser/lib -L/stage/irsa-staff-wlandry/ws/tablator//lib -lcfitsio -lCCfits -lboost_filesystem -lboost_system -lboost_regex -lhdf5 -lhdf5 -lhdf5_cpp -ltinyhtm -lpthread -ltinyhtmcxx -ltinyhtm -lpthread -lhires -ljson5_parser -ltablator
 
 Copy that binary to distribution directory.
 
-  cp planck_toi_hires ../../planck_toi_hires_binary/libs
+  cp planck_toi_hires ../../planck_toi_hires_binary/
 
-Next copy all of the dynamic libraries to this distribution directory.
+Next copy all of the dynamic libraries to the lib/ directory.
 
-  cd ../../planck_toi_hires_binary/libs
+  cd ../../planck_toi_hires_binary/lib
   cp /usr/lib64/libgfortran.so.1 .
   cp /usr/lib64/liblapack.so.3 .
   cp /usr/lib64/libblas.so.3 .
@@ -42,6 +43,6 @@ Next copy all of the dynamic libraries to this distribution directory.
   cp /usr/lib64/libz.so.1 .
   cp /irsa/cm/env_1.9_mnt/core/lib64/libgomp.so.1 .
   cp /irsa/cm/env_1.9_mnt/core/lib/libboost_iostreams.so.1.53.0 .
-  cp /home/wlandry/ws/mlpack-1.0.12/lib/libmlpack.so.1 .
+  cp /irsa/cm/dev_1.9/tps/lib/libmlpack.so.1 .
 
-To run, set LD_LIBRARY_PATH to point to this directory.
+For distribution, you may want to strip the libraries and executable.
