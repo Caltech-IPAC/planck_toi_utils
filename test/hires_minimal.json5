@@ -5,7 +5,7 @@
     output:
     {
         prefix:"test/hires_minimal/",
-        type:["minimap","mcm","elastic_net"]
+        type:["minimap","mcm"]
     },
     pos:
     {

@@ -28,9 +28,7 @@ images to output."
                         "enum":
                         [
                             "minimap",
-                            "mcm",
-                            "elastic_net",
-                            "tikhonov"
+                            "mcm"
                         ]
                     }
                 }
