@@ -35,12 +35,14 @@ std::vector<hires::Sample> get_sample_from_table (
   tablator::Table table (path);
 
   /// Get BUNIT from the signal column
-  keywords.push_back (
-      { "BUNIT",
-        { table.fields_properties.at (table.compound_type.getMemberIndex (
-                                          columns.at ("signal")))
-              .attributes["unit"],
-          "" } });
+  auto column=std::find_if (table.columns.begin (), table.columns.end (),
+                            [](const tablator::Column &c)
+                            { return c.name == "signal"; });
+  if (column == table.columns.end ())
+    throw std::runtime_error ("Could not find 'signal' column in result.");
+
+  keywords.push_back ({ "BUNIT", {column->field_properties.attributes["unit"],
+          ""}});
   auto keyword_mapping = tablator::fits_keyword_mapping (true);
   for (auto &p : table.properties)
     {
@@ -94,32 +96,31 @@ std::vector<hires::Sample> get_sample_from_table (
   hires::Gnomonic projection (center.lon (), center.lat ());
 
   std::vector<hires::Sample> samples;
-  samples.reserve (table.size ());
+  samples.reserve (table.num_rows ());
 
-  size_t ra_offset (table.compound_type.getMemberOffset (
-      table.compound_type.getMemberIndex (columns.at ("ra")))),
-      dec_offset (table.compound_type.getMemberOffset (
-          table.compound_type.getMemberIndex (columns.at ("dec")))),
-      signal_offset (table.compound_type.getMemberOffset (
-          table.compound_type.getMemberIndex (columns.at ("signal")))),
-      psi_offset (table.compound_type.getMemberOffset (
-          table.compound_type.getMemberIndex (columns.at ("psi"))));
+  size_t ra_offset (table.column_offset (columns.at ("ra"))),
+    dec_offset (table.column_offset (columns.at ("dec"))),
+    signal_offset (table.column_offset (columns.at ("signal"))),
+    psi_offset (table.column_offset (columns.at ("psi")));
 
-  size_t num_rows = table.size ();
+  size_t num_rows = table.num_rows ();
   for (size_t row = 0; row < num_rows; ++row)
     {
-      double ra = *reinterpret_cast<double *>(
-                      table.data.data () + row * table.row_size + ra_offset),
-             dec = *reinterpret_cast<double *>(
-                       table.data.data () + row * table.row_size + dec_offset);
+      double ra = *reinterpret_cast<double *>(table.data.data ()
+                                              + row * table.row_size ()
+                                              + ra_offset),
+             dec = *reinterpret_cast<double *>(table.data.data ()
+                                               + row * table.row_size ()
+                                               + dec_offset);
       double x, y;
       std::tie (x, y) = projection.degrees_to_xy (ra, dec);
       // FIXME: Figure out whether float or double automatically
-      float signal
-          = *reinterpret_cast<float *>(table.data.data ()
-                                       + row * table.row_size + signal_offset);
-      float psi = *reinterpret_cast<float *>(
-                      table.data.data () + row * table.row_size + psi_offset);
+      float signal = *reinterpret_cast<float *>(table.data.data ()
+                                                + row * table.row_size ()
+                                                + signal_offset);
+      float psi = *reinterpret_cast<float *>(table.data.data ()
+                                             + row * table.row_size ()
+                                             + psi_offset);
       samples.emplace_back (x, y, signal, psi);
     }
   return samples;
