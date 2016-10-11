@@ -13,15 +13,12 @@
             {
                 "prefix":
                 {
-                    "description": "Prefix added to all output filenames.  \
-For example, if you want to put all of the results into the directory OUT, \
-then set prefix to 'OUT'.  To output to standard output, set the prefix to '-'."
+                    "description": "Prefix added to all output filenames. For example, if you want to put all of the results into the directory OUT, then set prefix to 'OUT'.  To output to standard output, set the prefix to '-'.",
                     "type": "string"
                 },
                 "type":
                 {
-                    "description": "An array of strings with the types of \
-images to output."
+                    "description": "An array of strings with the types of images to output.",
                     "type": "array",
                     "items":
                     {
@@ -42,13 +39,13 @@ images to output."
         "detector":
         {
             "description": "The frequency of the detector in GHz",
-            "type": "int"
+            "type": "integer"
         },
         "mcm_iterations":
         {
-            "description": "The number of iteration for MCM"
-            "type": "int"
-        }
+            "description": "The number of iteration for MCM",
+            "type": "integer"
+        },
         "pos":
         {
             "description": "An object detailing the shape of the region used when computing the images.",
@@ -57,8 +54,7 @@ images to output."
             {
                 "frame":
                 {
-                    "description": "A string denoting which cooridinate frame \
-to use for the result",
+                    "description": "A string denoting which cooridinate frame to use for the result",
                     "enum":
                     [
                         "j2000", "icrs", "galactic"
@@ -72,8 +68,7 @@ to use for the result",
                 },
                 "shape":
                 {
-                    "description": "Shape of the region to be considered for \
-image generation",
+                    "description": "Shape of the region to be considered for image generation",
                     "type": "object",
                     "properties":
                     {
@@ -84,8 +79,7 @@ image generation",
                         },
                         "center":
                         {
-                            "description": "For circle and box, the \
-coordinates for the center of the shape",
+                            "description": "For circle and box, the coordinates for the center of the shape",
                             "type": "array",
                             "items":
                             {
@@ -98,11 +92,10 @@ coordinates for the center of the shape",
                         {
                             "description": "For circle, the radius",
                             "type": "number"
-                        }
+                        },
                         "size":
                         {
-                            "description": "For box, the width and height in \
-the coordinate frame give by pos.frame",
+                            "description": "For box, the width and height in the coordinate frame give by pos.frame",
                             "type": "array",
                             "items":
                             {
@@ -113,10 +106,9 @@ the coordinate frame give by pos.frame",
                         },
                         "vertices":
                         {
-                            "description": "For polygon, an array of pairs of\
-numbers constituting the vertices making up the polygon",
+                            "description": "For polygon, an array of pairs of numbers constituting the vertices making up the polygon",
                             "type": "array",
-                            "items"
+                            "items":
                             {
                                 "type":"array",
                                 "items":
@@ -125,7 +117,7 @@ numbers constituting the vertices making up the polygon",
                                 },
                                 "minItems": 2,
                                 "maxItems": 2
-                            }
+                            },
                             "minItems": 3
                         }
                     }
